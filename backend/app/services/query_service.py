@@ -39,8 +39,12 @@ class QueryService:
             forward_returns = data_service.get_forward_returns(
                 data, match_date, filtered_horizons
             )
+            # Filter out None values for Pydantic validation
+            forward_returns_filtered = {
+                k: v for k, v in forward_returns.items() if v is not None
+            }
             instances.append(
-                PatternInstance(date=match_date, forward_returns=forward_returns)
+                PatternInstance(date=match_date, forward_returns=forward_returns_filtered)
             )
 
         # Calculate summary statistics

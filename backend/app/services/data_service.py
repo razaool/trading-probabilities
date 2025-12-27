@@ -4,8 +4,9 @@ Service for fetching and managing market data
 
 import yfinance as yf
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Optional, Dict
+from sqlalchemy import create_engine, text
 from app.core.config import settings
 
 
@@ -13,13 +14,16 @@ class DataService:
     """Service for fetching historical market data"""
 
     def __init__(self):
-        self.cache = {}
+        self.cache = {}  # In-memory cache (fallback)
+        self.db_engine = create_engine(settings.DATABASE_URL)
 
     async def fetch_historical_data(
         self, ticker: str, period: str = "20y"
     ) -> pd.DataFrame:
         """
         Fetch historical data for a ticker
+        - First tries database (fast)
+        - Falls back to yfinance if not in DB (slow, then caches to DB)
 
         Args:
             ticker: Ticker symbol
@@ -28,15 +32,24 @@ class DataService:
         Returns:
             DataFrame with historical OHLCV data
         """
-        if ticker in self.cache:
-            cached_data, cached_time = self.cache[ticker]
-            if datetime.now() - cached_time < timedelta(seconds=settings.DATA_CACHE_TTL):
-                return cached_data
+        # Step 1: Try to get from database first
+        db_data = self._get_from_database(ticker)
+        if db_data is not None:
+            print(f"✅ Retrieved {ticker} from database")
+            return db_data
 
+        # Step 2: Not in DB - fetch from yfinance and store
+        print(f"⚠️  {ticker} not in database, fetching from yfinance...")
         try:
             data = yf.download(ticker, period=period, progress=False)
-            self.cache[ticker] = (data, datetime.now())
+            if data.empty:
+                raise ValueError(f"No data available for {ticker}")
+
+            # Store in database for next time
+            self._save_to_database(ticker, data)
+            print(f"✅ Cached {ticker} to database")
             return data
+
         except Exception as e:
             raise ValueError(f"Failed to fetch data for {ticker}: {str(e)}")
 
@@ -122,6 +135,121 @@ class DataService:
     def get_reference_ticker(self, indicator: str) -> Optional[str]:
         """Get the reference ticker for an indicator"""
         return settings.INDICATOR_REFERENCES.get(indicator)
+
+    def _get_from_database(self, ticker: str) -> Optional[pd.DataFrame]:
+        """
+        Load ticker data from SQLite database
+
+        Args:
+            ticker: Ticker symbol
+
+        Returns:
+            DataFrame with OHLCV data or None if not found
+        """
+        try:
+            # Query historical prices from database
+            query = """
+                SELECT date, open, high, low, close, volume, adjusted_close
+                FROM historical_prices
+                WHERE ticker = ?
+                ORDER BY date
+            """
+            df = pd.read_sql(query, self.db_engine, params=(ticker,))
+
+            if df.empty:
+                return None
+
+            # Convert to DataFrame format expected by the rest of the app
+            df['date'] = pd.to_datetime(df['date'])
+            df.set_index('date', inplace=True)
+            df.index.name = 'Date'  # Match yfinance format
+
+            # Rename columns to match yfinance format (capital first letter)
+            df.rename(columns={
+                'adjusted_close': 'Adj Close',
+                'open': 'Open',
+                'high': 'High',
+                'low': 'Low',
+                'close': 'Close',
+                'volume': 'Volume'
+            }, inplace=True)
+
+            return df
+
+        except Exception as e:
+            print(f"Error reading from database: {e}")
+            return None
+
+    def _save_to_database(self, ticker: str, data: pd.DataFrame) -> bool:
+        """
+        Save ticker data to SQLite database
+
+        Args:
+            ticker: Ticker symbol
+            data: DataFrame with OHLCV data
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Calculate daily returns
+            data_copy = data.copy()
+            data_copy['daily_return'] = data_copy['Close'].pct_change() * 100
+
+            # Insert price data
+            for date, row in data.iterrows():
+                self.db_engine.execute(
+                    text("""
+                        INSERT OR REPLACE INTO historical_prices
+                        (ticker, date, open, high, low, close, volume, adjusted_close)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """),
+                    (
+                        ticker,
+                        date.strftime('%Y-%m-%d'),
+                        float(row['Open']),
+                        float(row['High']),
+                        float(row['Low']),
+                        float(row['Close']),
+                        int(row['Volume']),
+                        float(row['Adj Close'])
+                    )
+                )
+
+            # Insert daily returns
+            for date, row in data_copy.iterrows():
+                if pd.notna(row['daily_return']):
+                    self.db_engine.execute(
+                        text("""
+                            INSERT OR REPLACE INTO daily_returns (ticker, date, return_pct)
+                            VALUES (?, ?, ?)
+                        """),
+                        (ticker, date.strftime('%Y-%m-%d'), float(row['daily_return']))
+                    )
+
+            # Update ticker metadata
+            self.db_engine.execute(
+                text("""
+                    INSERT OR REPLACE INTO tickers
+                    (symbol, name, type, data_available, earliest_date, latest_date, last_updated)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """),
+                (
+                    ticker,
+                    ticker,  # Can add real names from constituents_service
+                    'stock',
+                    True,
+                    data.index[0].strftime('%Y-%m-%d'),
+                    data.index[-1].strftime('%Y-%m-%d'),
+                    datetime.now().strftime('%Y-%m-%d')
+                )
+            )
+
+            return True
+
+        except Exception as e:
+            print(f"Error saving to database: {e}")
+            return False
 
 
 data_service = DataService()

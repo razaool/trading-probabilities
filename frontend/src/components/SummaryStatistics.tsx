@@ -19,11 +19,17 @@ interface SummaryStatisticsProps {
   data: QueryResponse;
 }
 
-function formatPercentage(value: number): string {
+function formatPercentage(value: number | null | undefined): string {
+  if (value === null || value === undefined) {
+    return 'N/A';
+  }
   return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
 }
 
-function formatWinRate(value: number): string {
+function formatWinRate(value: number | null | undefined): string {
+  if (value === null || value === undefined) {
+    return 'N/A';
+  }
   return `${(value * 100).toFixed(1)}%`;
 }
 
@@ -76,23 +82,23 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
               <StatCard
                 title="Average Return"
                 value={formatPercentage(stats.mean)}
-                subtitle={`${stats.count} occurrences`}
-                positive={stats.mean >= 0}
+                subtitle={`${stats.count ?? 'N/A'} occurrences`}
+                positive={stats.mean !== undefined && stats.mean !== null && stats.mean >= 0}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatCard
                 title="Median Return"
                 value={formatPercentage(stats.median)}
-                positive={stats.median >= 0}
+                positive={stats.median !== undefined && stats.median !== null && stats.median >= 0}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatCard
                 title="Win Rate"
                 value={formatWinRate(stats.win_rate)}
-                subtitle={stats.win_rate >= 0.5 ? 'Bullish' : 'Bearish'}
-                positive={stats.win_rate >= 0.5}
+                subtitle={stats.win_rate !== undefined && stats.win_rate !== null && stats.win_rate >= 0.5 ? 'Bullish' : 'Bearish'}
+                positive={stats.win_rate !== undefined && stats.win_rate !== null && stats.win_rate >= 0.5}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>

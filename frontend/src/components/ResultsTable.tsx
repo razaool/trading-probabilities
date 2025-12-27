@@ -16,13 +16,13 @@ interface ResultsTableProps {
   data: QueryResponse;
 }
 
-function formatPercentage(value: number | null): string {
-  if (value === null) return 'N/A';
+function formatPercentage(value: number | null | undefined): string {
+  if (value === null || value === undefined) return 'N/A';
   return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
 }
 
-function formatCellColor(value: number | null): React.CSSProperties {
-  if (value === null) return {};
+function formatCellColor(value: number | null | undefined): React.CSSProperties {
+  if (value === null || value === undefined) return {};
   return {
     color: value >= 0 ? '#2e7d32' : '#d32f2f',
     fontWeight: 'bold',
