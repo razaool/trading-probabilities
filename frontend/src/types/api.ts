@@ -38,3 +38,12 @@ export interface TickerListResponse {
   commodities: string[];
   top_stocks: string[];
 }
+
+export interface TickerSuggestion {
+  ticker: string;
+  name: string;
+}
+
+export interface TickerSuggestionsResponse {
+  suggestions: TickerSuggestion[];
+}

@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     SENTIMENT_INDICATORS: List[str] = ["PUT_CALL_RATIO"]
     COMMODITIES: List[str] = ["GLD", "USO", "SLV"]
 
+    # Top stocks - fetched dynamically from index holdings or external APIs
+    # For now, users can query any ticker symbol directly
+    TOP_STOCKS: List[str] = []  # Empty list - any ticker can be queried
+
     # Indicator mappings (indicator -> reference asset)
     INDICATOR_REFERENCES: dict = {
         "VIX": "SPY",

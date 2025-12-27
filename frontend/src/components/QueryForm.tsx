@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -11,8 +11,11 @@ import {
   InputLabel,
   Checkbox,
   ListItemText,
+  Autocomplete,
+  Stack,
 } from '@mui/material';
-import type { QueryRequest } from '../types/api';
+import type { QueryRequest, TickerSuggestion } from '../types/api';
+import { apiService } from '../services/api';
 
 interface QueryFormProps {
   onSubmit: (query: QueryRequest) => void;
@@ -41,10 +44,29 @@ const TIME_HORIZONS = [
 
 export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   const [ticker, setTicker] = useState('');
+  const [suggestions, setSuggestions] = useState<TickerSuggestion[]>([]);
   const [conditionType, setConditionType] = useState<QueryRequest['condition_type']>('percentage_change');
   const [threshold, setThreshold] = useState('');
   const [operator, setOperator] = useState<QueryRequest['operator']>('gt');
   const [timeHorizons, setTimeHorizons] = useState<QueryRequest['time_horizons']>(['1d', '1w', '1m', '1y']);
+
+  // Fetch suggestions when ticker changes
+  useEffect(() => {
+    if (ticker.length >= 1) {
+      const debounceTimer = setTimeout(async () => {
+        try {
+          const results = await apiService.getTickerSuggestions(ticker);
+          setSuggestions(results);
+        } catch (error) {
+          console.error('Error fetching suggestions:', error);
+        }
+      }, 300);
+
+      return () => clearTimeout(debounceTimer);
+    } else {
+      setSuggestions([]);
+    }
+  }, [ticker]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,14 +95,54 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
         Query Historical Patterns
       </Typography>
       <Box component="form" onSubmit={handleSubmit}>
-        <TextField
-          fullWidth
-          label="Ticker Symbol"
+        <Autocomplete
+          freeSolo
+          options={suggestions}
+          getOptionLabel={(option) => {
+            if (typeof option === 'string') return option;
+            return option.ticker;
+          }}
           value={ticker}
-          onChange={(e) => setTicker(e.target.value)}
-          placeholder="e.g., NVDA, VIX, SPY"
-          sx={{ mb: 2 }}
-          required
+          onChange={(event, newValue) => {
+            if (typeof newValue === 'string') {
+              setTicker(newValue);
+            } else if (newValue) {
+              setTicker(newValue.ticker);
+            } else {
+              setTicker('');
+            }
+          }}
+          onInputChange={(event, newInputValue) => {
+            setTicker(newInputValue);
+          }}
+          renderOption={(props, option) => (
+            <Box component="li" {...props} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <Typography variant="body1" fontWeight="bold">
+                {option.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {option.ticker}
+              </Typography>
+            </Box>
+          )}
+          slotProps={{
+            paper: {
+              sx: {
+                width: 'fit-content',
+                minWidth: '100%',
+              }
+            }
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              fullWidth
+              label="Ticker Symbol"
+              placeholder="e.g., NVDA, AVGO, SPY"
+              sx={{ mb: 2 }}
+              required
+            />
+          )}
         />
 
         <FormControl fullWidth sx={{ mb: 2 }}>

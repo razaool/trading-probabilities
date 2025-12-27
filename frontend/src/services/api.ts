@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { QueryRequest, QueryResponse, TickerListResponse } from '../types/api';
+import type { QueryRequest, QueryResponse, TickerListResponse, TickerSuggestion, TickerSuggestionsResponse } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -18,6 +18,16 @@ export const apiService = {
 
   async getAvailableTickers(): Promise<TickerListResponse> {
     const response = await api.get('/api/tickers');
+    return response.data;
+  },
+
+  async getTickerSuggestions(query: string): Promise<TickerSuggestion[]> {
+    const response = await api.get('/api/tickers/suggest', { params: { q: query } });
+    return response.data.suggestions;
+  },
+
+  async getEtfConstituents(etfTicker: string): Promise<{ etf: string; constituents: string[]; count: number }> {
+    const response = await api.get(`/api/tickers/etf/${etfTicker}`);
     return response.data;
   },
 

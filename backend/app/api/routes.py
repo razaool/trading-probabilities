@@ -2,9 +2,11 @@
 API route definitions
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query as QueryParam
+from typing import List
 from app.models.schemas import QueryRequest, QueryResponse, TickerListResponse
 from app.services.query_service import query_service
+from app.services.constituents_service import constituents_service
 from app.core.config import settings
 
 router = APIRouter()
@@ -19,7 +21,7 @@ async def get_available_tickers():
         volatility_indicators=settings.VOLATILITY_INDICATORS,
         sentiment_indicators=settings.SENTIMENT_INDICATORS,
         commodities=settings.COMMODITIES,
-        top_stocks=[],  # To be populated later
+        top_stocks=settings.TOP_STOCKS,
     )
 
 
@@ -45,3 +47,35 @@ async def query_historical_patterns(query: QueryRequest):
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
+
+
+@router.get("/tickers/suggest")
+async def suggest_tickers(q: str = QueryParam(..., min_length=1, description="Search query")):
+    """
+    Get ticker suggestions based on search query
+
+    Searches through cached ETF constituents and returns matching tickers with company names
+    """
+    try:
+        suggestions = await constituents_service.search_tickers(q)
+        return {"suggestions": suggestions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching suggestions: {str(e)}")
+
+
+@router.get("/tickers/etf/{etf_ticker}")
+async def get_etf_constituents(etf_ticker: str):
+    """
+    Get constituents for a specific ETF
+
+    Returns the list of stocks held by the specified ETF
+    """
+    try:
+        holdings = await constituents_service.get_etf_holdings(etf_ticker.upper())
+        return {
+            "etf": etf_ticker.upper(),
+            "constituents": holdings,
+            "count": len(holdings)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching constituents: {str(e)}")

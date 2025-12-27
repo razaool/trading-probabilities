@@ -28,39 +28,57 @@ export default function HomePage() {
   };
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ my: 4 }}>
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <h1>Historical Pattern Analysis Tool</h1>
-          <p style={{ color: '#666' }}>
-            Query historical market data and analyze forward returns
-          </p>
-        </Box>
-
-        <Box sx={{ maxWidth: 600, mx: 'auto' }}>
-          <QueryForm onSubmit={handleQuery} loading={loading} />
-        </Box>
-
-        {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <CircularProgress />
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        minHeight: '100vh',
+        py: 4,
+        px: 2,
+      }}
+    >
+      <Container
+        maxWidth="xl"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Box sx={{ width: '100%', maxWidth: 1200, textAlign: 'center' }}>
+          <Box sx={{ mb: 4 }}>
+            <h1>Historical Pattern Analysis Tool</h1>
+            <p style={{ color: 'text.secondary' }}>
+              Query historical market data and analyze forward returns
+            </p>
           </Box>
-        )}
 
-        {error && (
-          <Alert severity="error" sx={{ mt: 3 }}>
-            <AlertTitle>Error</AlertTitle>
-            {error}
-          </Alert>
-        )}
+          <Box sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
+            <QueryForm onSubmit={handleQuery} loading={loading} />
+          </Box>
 
-        {results && !loading && (
-          <>
-            <SummaryStatistics data={results} />
-            <ResultsTable data={results} />
-          </>
-        )}
-      </Box>
-    </Container>
+          {loading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <CircularProgress />
+            </Box>
+          )}
+
+          {error && (
+            <Alert severity="error" sx={{ mt: 3, maxWidth: 600, mx: 'auto' }}>
+              <AlertTitle>Error</AlertTitle>
+              {error}
+            </Alert>
+          )}
+
+          {results && !loading && (
+            <Box sx={{ width: '100%' }}>
+              <SummaryStatistics data={results} />
+              <ResultsTable data={results} />
+            </Box>
+          )}
+        </Box>
+      </Container>
+    </Box>
   );
 }
