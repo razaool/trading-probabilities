@@ -27,12 +27,9 @@ const CONDITION_TYPES = [
   { value: 'absolute_threshold', label: 'Absolute Threshold' },
 ];
 
-const OPERATORS = [
-  { value: 'gt', label: '> Greater Than (Price Increase)' },
-  { value: 'lt', label: '< Less Than (Price Decrease)' },
-  { value: 'gte', label: '>= Greater Than or Equal' },
-  { value: 'lte', label: '<= Less Than or Equal' },
-  { value: 'eq', label: '= Equal To' },
+const DIRECTION_OPTIONS = [
+  { value: 'increase', label: 'Price Increased (Rose)' },
+  { value: 'decrease', label: 'Price Decreased (Dropped)' },
 ];
 
 const TIME_HORIZONS = [
@@ -47,7 +44,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   const [suggestions, setSuggestions] = useState<TickerSuggestion[]>([]);
   const [conditionType, setConditionType] = useState<QueryRequest['condition_type']>('percentage_change');
   const [threshold, setThreshold] = useState('');
-  const [operator, setOperator] = useState<QueryRequest['operator']>('gt');
+  const [direction, setDirection] = useState<'increase' | 'decrease'>('increase');
   const [timeHorizons, setTimeHorizons] = useState<QueryRequest['time_horizons']>(['1d', '1w', '1m', '1y']);
 
   // Fetch suggestions when ticker changes
@@ -75,10 +72,26 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
       return;
     }
 
+    const thresholdValue = parseFloat(threshold);
+
+    // Convert direction to operator and apply sign
+    let operator: QueryRequest['operator'];
+    let finalThreshold: number;
+
+    if (direction === 'increase') {
+      // Price increased: looking for positive changes greater than threshold
+      operator = 'gt';
+      finalThreshold = thresholdValue;
+    } else {
+      // Price decreased: looking for negative changes less than negative threshold
+      operator = 'lt';
+      finalThreshold = -thresholdValue; // Convert positive input to negative
+    }
+
     onSubmit({
       ticker: ticker.toUpperCase(),
       condition_type: conditionType,
-      threshold: parseFloat(threshold),
+      threshold: finalThreshold,
       operator,
       time_horizons: timeHorizons,
     });
@@ -162,15 +175,15 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <FormControl sx={{ flex: 1 }}>
-            <InputLabel>Operator</InputLabel>
+            <InputLabel>Direction</InputLabel>
             <Select
-              value={operator}
-              label="Operator"
-              onChange={(e) => setOperator(e.target.value as QueryRequest['operator'])}
+              value={direction}
+              label="Direction"
+              onChange={(e) => setDirection(e.target.value as 'increase' | 'decrease')}
             >
-              {OPERATORS.map((op) => (
-                <MenuItem key={op.value} value={op.value}>
-                  {op.label}
+              {DIRECTION_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
                 </MenuItem>
               ))}
             </Select>
@@ -178,11 +191,13 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
 
           <TextField
             sx={{ flex: 1 }}
-            label="Threshold"
+            label="Percentage"
             type="number"
             value={threshold}
             onChange={(e) => setThreshold(e.target.value)}
-            placeholder="e.g., 3, 30"
+            placeholder="e.g., 5, 10, 20"
+            helperText="Enter a positive number (e.g., 5 for 5%)"
+            inputProps={{ step: "any", min: 0 }}
             required
           />
         </Box>

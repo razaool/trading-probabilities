@@ -28,6 +28,15 @@ class QueryService:
         # Find dates matching the condition
         matching_dates = self._find_matching_dates(data, query)
 
+        print(f"=== QUERY DEBUG ===")
+        print(f"Query: {query.ticker} {query.operator} {query.threshold}")
+        print(f"Matching dates found: {len(matching_dates)}")
+        if len(matching_dates) <= 10:
+            print(f"Dates: {matching_dates}")
+        else:
+            print(f"First 5 dates: {matching_dates[:5]}")
+        print(f"==================")
+
         # Calculate forward returns for each matching date
         horizons_map = {"1d": 1, "1w": 5, "1m": 21, "1y": 252}
         filtered_horizons = {
@@ -57,7 +66,10 @@ class QueryService:
         if data_service.is_indicator(query.ticker):
             reference_ticker = data_service.get_reference_ticker(query.ticker)
 
-        return QueryResponse(
+        print(f"Creating response with {len(instances)} instances")
+        print(f"Total occurrences field: {len(instances)}")
+
+        response = QueryResponse(
             ticker=query.ticker,
             condition=self._format_condition(query),
             reference_ticker=reference_ticker,
@@ -65,6 +77,9 @@ class QueryService:
             summary_statistics=summary_stats,
             total_occurrences=len(instances),
         )
+
+        print(f"Response created. total_occurrences = {response.total_occurrences}")
+        return response
 
     def _find_matching_dates(
         self, data: pd.DataFrame, query: QueryRequest

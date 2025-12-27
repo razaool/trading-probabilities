@@ -12,7 +12,12 @@
       "Bash(curl:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(../venv/bin/python -m app.database.init_poc)",
+      "Bash(./venv/bin/pip:*)",
+      "Bash(./venv/bin/python:*)",
+      "Bash(../venv/bin/python:*)",
+      "Bash(/Users/razaool/trading-probabilities/venv/bin/python:*)"
     ]
   }
 }

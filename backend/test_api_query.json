@@ -1,0 +1,1 @@
+{"ticker": "SPY", "condition_type": "percentage_change", "threshold": -3, "operator": "lt", "lookback_days": 252}

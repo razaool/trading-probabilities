@@ -18,6 +18,12 @@ export default function HomePage() {
 
     try {
       const response = await apiService.queryHistoricalPatterns(query);
+      console.log('=== API Response Debug ===');
+      console.log('Full response:', response);
+      console.log('Total occurrences:', response.total_occurrences);
+      console.log('Number of instances:', response.instances.length);
+      console.log('First 3 instances:', response.instances.slice(0, 3));
+      console.log('========================');
       setResults(response);
     } catch (err: any) {
       const errorMessage = err.response?.data?.detail || err.message || 'Failed to query historical patterns';

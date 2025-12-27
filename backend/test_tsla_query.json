@@ -1,0 +1,1 @@
+{"ticker": "TSLA", "condition_type": "percentage_change", "threshold": -20, "operator": "lt", "lookback_days": 252}
