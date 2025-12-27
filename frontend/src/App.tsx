@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ThemeProvider, CssBaseline, IconButton, Box } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import HomePage from './pages/HomePage';
-import theme from './theme';
+import { createLightTheme, createDarkTheme } from './theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,10 +17,42 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const [mode, setMode] = useState<'dark' | 'light'>('dark');
+
+  const theme = useMemo(() => {
+    return mode === 'dark' ? createDarkTheme() : createLightTheme();
+  }, [mode]);
+
+  const toggleColorMode = () => {
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 16,
+            right: 16,
+            zIndex: 9999,
+          }}
+        >
+          <IconButton
+            onClick={toggleColorMode}
+            color="inherit"
+            sx={{
+              bgcolor: 'background.paper',
+              boxShadow: 3,
+              '&:hover': {
+                bgcolor: 'background.default',
+              },
+            }}
+          >
+            {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+        </Box>
         <Router>
           <Routes>
             <Route path="/" element={<HomePage />} />

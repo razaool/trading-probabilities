@@ -10,7 +10,9 @@
       "Bash(npm run dev)",
       "Bash(export PYTHONPATH=\"$PYTHONPATH:/Users/razaool/trading-probabilities/backend\":*)",
       "Bash(curl:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }
