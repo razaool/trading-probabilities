@@ -28,11 +28,11 @@ const CONDITION_TYPES = [
 ];
 
 const OPERATORS = [
-  { value: 'gt', label: '>' },
-  { value: 'lt', label: '<' },
-  { value: 'gte', label: '>=' },
-  { value: 'lte', label: '<=' },
-  { value: 'eq', label: '=' },
+  { value: 'gt', label: '> Greater Than (Price Increase)' },
+  { value: 'lt', label: '< Less Than (Price Decrease)' },
+  { value: 'gte', label: '>= Greater Than or Equal' },
+  { value: 'lte', label: '<= Less Than or Equal' },
+  { value: 'eq', label: '= Equal To' },
 ];
 
 const TIME_HORIZONS = [

@@ -21,6 +21,9 @@ class QueryRequest(BaseModel):
     time_horizons: List[Literal["1d", "1w", "1m", "1y"]] = Field(
         default=["1d", "1w", "1m", "1y"], description="Forward time horizons to analyze"
     )
+    lookback_days: Optional[int] = Field(
+        None, description="Number of trading days to look back (None = all history)"
+    )
 
 
 class PatternInstance(BaseModel):

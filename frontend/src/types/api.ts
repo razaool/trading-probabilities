@@ -4,6 +4,7 @@ export interface QueryRequest {
   threshold: number;
   operator: 'gt' | 'lt' | 'gte' | 'lte' | 'eq';
   time_horizons?: ('1d' | '1w' | '1m' | '1y')[];
+  lookback_days?: number;
 }
 
 export interface PatternInstance {
