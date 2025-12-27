@@ -372,13 +372,15 @@ class ConstituentsService:
         """
         query = query.upper()
 
-        # Get all unique holdings
-        all_tickers = set()
-        for holdings in self.cache.values():
-            all_tickers.update(holdings)
-
-        # Add major ETFs
-        all_tickers.update(["SPY", "QQQ", "IWM", "DIA", "GLD", "TLT", "VXX", "SVXY"])
+        # Get tickers from database
+        from app.database.models import SessionLocal, Ticker
+        db = SessionLocal()
+        try:
+            # Get all tickers from database
+            db_tickers = db.query(Ticker.symbol).all()
+            all_tickers = set([t[0] for t in db_tickers])
+        finally:
+            db.close()
 
         # Filter by query - check both ticker and company name
         matches = []

@@ -61,3 +61,5 @@ Thumbs.db
 .coverage
 htmlcov/
 *.cover
+backend/data/trading_patterns.db
+*.db

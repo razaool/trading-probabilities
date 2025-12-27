@@ -41,7 +41,8 @@ class DataService:
         # Step 2: Not in DB - fetch from yfinance and store
         print(f"⚠️  {ticker} not in database, fetching from yfinance...")
         try:
-            data = yf.download(ticker, period=period, progress=False)
+            # Download with auto_adjust=False to get Adj Close column
+            data = yf.download(ticker, period=period, progress=False, auto_adjust=False)
             if data.empty:
                 raise ValueError(f"No data available for {ticker}")
 
@@ -196,59 +197,77 @@ class DataService:
             data_copy = data.copy()
             data_copy['daily_return'] = data_copy['Close'].pct_change() * 100
 
-            # Insert price data
-            for date, row in data.iterrows():
-                self.db_engine.execute(
-                    text("""
-                        INSERT OR REPLACE INTO historical_prices
-                        (ticker, date, open, high, low, close, volume, adjusted_close)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """),
-                    (
-                        ticker,
-                        date.strftime('%Y-%m-%d'),
-                        float(row['Open']),
-                        float(row['High']),
-                        float(row['Low']),
-                        float(row['Close']),
-                        int(row['Volume']),
-                        float(row['Adj Close'])
-                    )
-                )
+            # Use connection context manager for SQLAlchemy 2.0+
+            with self.db_engine.connect() as conn:
+                # Check if 'Adj Close' column exists, otherwise use 'Close'
+                adj_close_col = 'Adj Close' if 'Adj Close' in data.columns else 'Close'
 
-            # Insert daily returns
-            for date, row in data_copy.iterrows():
-                if pd.notna(row['daily_return']):
-                    self.db_engine.execute(
+                # Insert price data using direct column access
+                for idx in range(len(data)):
+                    date = data.index[idx]
+                    conn.execute(
                         text("""
-                            INSERT OR REPLACE INTO daily_returns (ticker, date, return_pct)
-                            VALUES (?, ?, ?)
+                            INSERT OR REPLACE INTO historical_prices
+                            (ticker, date, open, high, low, close, volume, adjusted_close)
+                            VALUES (:ticker, :date, :open, :high, :low, :close, :volume, :adj_close)
                         """),
-                        (ticker, date.strftime('%Y-%m-%d'), float(row['daily_return']))
+                        {
+                            'ticker': ticker,
+                            'date': date.strftime('%Y-%m-%d'),
+                            'open': float(data['Open'].iloc[idx]),
+                            'high': float(data['High'].iloc[idx]),
+                            'low': float(data['Low'].iloc[idx]),
+                            'close': float(data['Close'].iloc[idx]),
+                            'volume': int(data['Volume'].iloc[idx]),
+                            'adj_close': float(data[adj_close_col].iloc[idx])
+                        }
                     )
 
-            # Update ticker metadata
-            self.db_engine.execute(
-                text("""
-                    INSERT OR REPLACE INTO tickers
-                    (symbol, name, type, data_available, earliest_date, latest_date, last_updated)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                """),
-                (
-                    ticker,
-                    ticker,  # Can add real names from constituents_service
-                    'stock',
-                    True,
-                    data.index[0].strftime('%Y-%m-%d'),
-                    data.index[-1].strftime('%Y-%m-%d'),
-                    datetime.now().strftime('%Y-%m-%d')
+                # Insert daily returns
+                for idx in range(len(data_copy)):
+                    daily_ret = data_copy['daily_return'].iloc[idx]
+                    # Check if not NaN using numpy's isnan which handles scalars properly
+                    import numpy as np
+                    if not isinstance(daily_ret, float) or not np.isnan(daily_ret):
+                        conn.execute(
+                            text("""
+                                INSERT OR REPLACE INTO daily_returns (ticker, date, return_pct)
+                                VALUES (:ticker, :date, :return_pct)
+                            """),
+                            {
+                                'ticker': ticker,
+                                'date': data_copy.index[idx].strftime('%Y-%m-%d'),
+                                'return_pct': float(daily_ret)
+                            }
+                        )
+
+                # Update ticker metadata
+                conn.execute(
+                    text("""
+                        INSERT OR REPLACE INTO tickers
+                        (symbol, name, type, data_available, earliest_date, latest_date, last_updated)
+                        VALUES (:symbol, :name, :type, :data_available, :earliest_date, :latest_date, :last_updated)
+                    """),
+                    {
+                        'symbol': ticker,
+                        'name': ticker,
+                        'type': 'stock',
+                        'data_available': True,
+                        'earliest_date': data.index[0].strftime('%Y-%m-%d'),
+                        'latest_date': data.index[-1].strftime('%Y-%m-%d'),
+                        'last_updated': datetime.now().strftime('%Y-%m-%d')
+                    }
                 )
-            )
+
+                # Commit the transaction
+                conn.commit()
 
             return True
 
         except Exception as e:
             print(f"Error saving to database: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
 
