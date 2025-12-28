@@ -159,9 +159,28 @@ export default function ResultsTable({ data }: ResultsTableProps) {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         sx={{
+          '.MuiTablePagination-root': {
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          },
           '.MuiTablePagination-select': {
             paddingTop: 1,
             paddingBottom: 1,
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          },
+          '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          },
+          '.MuiTablePagination-selectLabel': {
+            margin: 0,
+          },
+          '.MuiTablePagination-displayedRows': {
+            margin: 0,
+          },
+          '.MuiTablePagination-actions': {
+            marginLeft: { xs: 0, sm: 0 },
+          },
+          '.MuiTablePagination-spacer': {
+            flex: 1,
           },
         }}
       />

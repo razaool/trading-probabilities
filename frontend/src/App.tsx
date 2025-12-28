@@ -40,6 +40,8 @@ function App() {
             zIndex: 9999,
             display: 'flex',
             gap: 1,
+            transform: 'translateZ(0)',
+            willChange: 'transform',
           }}
         >
           <IconButton
