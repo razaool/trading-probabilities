@@ -231,7 +231,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
         Query Historical Patterns
       </Typography>

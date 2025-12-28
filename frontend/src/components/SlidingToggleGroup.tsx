@@ -39,6 +39,7 @@ export default function SlidingToggleGroup({ value, onChange, options }: Sliding
           border: 1,
           borderColor: 'divider',
           gap: 0.5,
+          width: { xs: '100%', sm: 'auto' },
         }}
       >
         {/* Sliding background */}
@@ -69,14 +70,14 @@ export default function SlidingToggleGroup({ value, onChange, options }: Sliding
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                px: 1.5,
+                px: { xs: 0.75, sm: 1.5 },
                 py: 1,
                 cursor: 'pointer',
                 userSelect: 'none',
                 transition: 'color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
                 color: isSelected ? 'primary.contrastText' : 'text.primary',
                 fontWeight: isSelected ? 600 : 400,
-                fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.8rem' },
                 whiteSpace: 'nowrap',
                 borderRadius: 1.5,
                 minWidth: 0,

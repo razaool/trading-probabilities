@@ -56,16 +56,16 @@ export default function SlidingButtonGroup({
 
   // Horizontal layout
   return (
-    <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+    <Box sx={{ display: 'flex', gap: { xs: 0.75, sm: 1.5 }, flexWrap: 'wrap' }}>
       {options.map((option, index) => (
         <Box
           key={option.value}
           onClick={() => onChange(option.value)}
           sx={{
             position: 'relative',
-            flex: '1 1 calc(33.333% - 12px)',
-            minWidth: 150,
-            p: 2,
+            flex: { xs: '1 1 calc(50% - 6px)', sm: '1 1 calc(33.333% - 12px)' },
+            minWidth: { xs: 80, sm: 150 },
+            p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
             border: 1,
             borderColor: value === option.value ? 'primary.main' : 'divider',
@@ -81,11 +81,11 @@ export default function SlidingButtonGroup({
             },
           }}
         >
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>
+          <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
             {option.label}
           </Typography>
           {option.description && (
-            <Typography variant="caption" sx={{ opacity: value === option.value ? 0.9 : 0.7 }}>
+            <Typography variant="caption" sx={{ opacity: value === option.value ? 0.9 : 0.7, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
               {option.description}
             </Typography>
           )}
