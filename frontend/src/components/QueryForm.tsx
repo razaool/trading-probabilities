@@ -138,12 +138,22 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
     let finalOperator: QueryRequest['operator'];
     let finalThreshold: number;
 
-    if (direction === 'increase' || direction === 'above') {
-      // Price increased or indicator exceeded threshold
+    // For indicators, always use 'gte' (greater or equal) or 'lte' (less or equal)
+    // based on the direction, since Match Type is not shown
+    if (direction === 'above') {
+      // Indicator exceeded threshold: use >=
+      finalOperator = 'gte';
+      finalThreshold = thresholdValue;
+    } else if (direction === 'below') {
+      // Indicator dropped below threshold: use <=
+      finalOperator = 'lte';
+      finalThreshold = thresholdValue;
+    } else if (direction === 'increase') {
+      // Price increased: use the operator from Match Type
       finalOperator = operator;
       finalThreshold = thresholdValue;
-    } else if (direction === 'decrease') {
-      // Price decreased: invert operator and make threshold negative
+    } else {
+      // direction === 'decrease' - Price decreased: invert operator and make threshold negative
       if (operator === 'gt') {
         finalOperator = 'lt'; // Decrease "more than" = less than negative
       } else if (operator === 'gte') {
@@ -152,17 +162,6 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
         finalOperator = 'eq'; // Exact match stays the same
       }
       finalThreshold = -thresholdValue; // Convert positive input to negative
-    } else {
-      // direction === 'below' - indicator dropped below threshold
-      // For indicators, we use absolute_threshold, so "below" means less than
-      if (operator === 'gt') {
-        finalOperator = 'lt'; // Below "more than" = less than threshold
-      } else if (operator === 'gte') {
-        finalOperator = 'lte'; // Below "at least" = less than or equal threshold
-      } else {
-        finalOperator = 'eq'; // Exact match stays the same
-      }
-      finalThreshold = thresholdValue; // Keep positive for indicators
     }
 
     onSubmit({
@@ -320,7 +319,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
         </FormControl>
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <FormControl sx={{ flex: 1 }}>
+          <FormControl sx={{ flex: assetType === 'indicators' ? 1 : 1 }}>
             <InputLabel>{assetType === 'indicators' ? 'Condition' : 'Direction'}</InputLabel>
             <Select
               value={direction}
@@ -335,23 +334,25 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             </Select>
           </FormControl>
 
-          <FormControl sx={{ flex: 1 }}>
-            <InputLabel>Match Type</InputLabel>
-            <Select
-              value={operator}
-              label="Match Type"
-              onChange={(e) => setOperator(e.target.value as QueryRequest['operator'])}
-            >
-              {OPERATOR_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {assetType !== 'indicators' && (
+            <FormControl sx={{ flex: 1 }}>
+              <InputLabel>Match Type</InputLabel>
+              <Select
+                value={operator}
+                label="Match Type"
+                onChange={(e) => setOperator(e.target.value as QueryRequest['operator'])}
+              >
+                {OPERATOR_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
 
           <TextField
-            sx={{ flex: 1 }}
+            sx={{ flex: assetType === 'indicators' ? 1 : 1 }}
             label={assetType === 'indicators' ? 'Threshold Value' : 'Percentage'}
             type="number"
             value={threshold}
