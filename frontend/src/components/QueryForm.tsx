@@ -15,6 +15,7 @@ import {
   Stack,
   ToggleButton,
   ToggleButtonGroup,
+  Chip,
 } from '@mui/material';
 import type { QueryRequest, TickerSuggestion } from '../types/api';
 import { apiService } from '../services/api';
@@ -32,6 +33,12 @@ const CONDITION_TYPES = [
 const ASSET_TYPE_OPTIONS = [
   { value: 'stocks', label: 'Stocks & ETFs' },
   { value: 'indicators', label: 'Indicators' },
+];
+
+const INDICATOR_OPTIONS = [
+  { value: '^VIX', label: 'VIX', description: 'CBOE Volatility Index' },
+  { value: '^VXN', label: 'VXN', description: 'Nasdaq-100 Volatility Index' },
+  { value: 'PCR', label: 'PCR', description: 'Put/Call Ratio' },
 ];
 
 const DIRECTION_OPTIONS = [
@@ -102,6 +109,11 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
       setTicker('');
       setSuggestions([]);
     }
+  };
+
+  // Handle indicator button click
+  const handleIndicatorSelect = (indicatorValue: string) => {
+    setTicker(indicatorValue);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -176,55 +188,95 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
       </Box>
 
       <Box component="form" onSubmit={handleSubmit}>
-        <Autocomplete
-          freeSolo
-          options={filteredSuggestions}
-          getOptionLabel={(option) => {
-            if (typeof option === 'string') return option;
-            return option.ticker;
-          }}
-          value={ticker}
-          onChange={(event, newValue) => {
-            if (typeof newValue === 'string') {
-              setTicker(newValue);
-            } else if (newValue) {
-              setTicker(newValue.ticker);
-            } else {
-              setTicker('');
-            }
-          }}
-          onInputChange={(event, newInputValue) => {
-            setTicker(newInputValue);
-          }}
-          renderOption={(props, option) => (
-            <Box component="li" {...props} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              <Typography variant="body1" fontWeight="bold">
-                {option.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {option.ticker}
-              </Typography>
-            </Box>
-          )}
-          slotProps={{
-            paper: {
-              sx: {
-                width: 'fit-content',
-                minWidth: '100%',
+        {assetType === 'indicators' ? (
+          <>
+            <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
+              Select Indicator
+            </Typography>
+            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+              {INDICATOR_OPTIONS.map((indicator) => (
+                <Button
+                  key={indicator.value}
+                  variant={ticker === indicator.value ? "contained" : "outlined"}
+                  onClick={() => handleIndicatorSelect(indicator.value)}
+                  sx={{
+                    flex: 1,
+                    py: 1.5,
+                    textTransform: 'none',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  <Typography variant="h6" component="span" fontWeight="bold">
+                    {indicator.label}
+                  </Typography>
+                  <Typography variant="caption" component="span">
+                    {indicator.description}
+                  </Typography>
+                </Button>
+              ))}
+            </Stack>
+            {ticker && (
+              <Box sx={{ mb: 2 }}>
+                <Chip
+                  label={`Selected: ${ticker}`}
+                  onDelete={() => setTicker('')}
+                  color="primary"
+                />
+              </Box>
+            )}
+          </>
+        ) : (
+          <Autocomplete
+            freeSolo
+            options={filteredSuggestions}
+            getOptionLabel={(option) => {
+              if (typeof option === 'string') return option;
+              return option.ticker;
+            }}
+            value={ticker}
+            onChange={(event, newValue) => {
+              if (typeof newValue === 'string') {
+                setTicker(newValue);
+              } else if (newValue) {
+                setTicker(newValue.ticker);
+              } else {
+                setTicker('');
               }
-            }
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              fullWidth
-              label="Ticker Symbol"
-              placeholder={assetType === 'indicators' ? "e.g., VIX, PCR, VXN" : "e.g., NVDA, AVGO, SPY"}
-              sx={{ mb: 2 }}
-              required
-            />
-          )}
-        />
+            }}
+            onInputChange={(event, newInputValue) => {
+              setTicker(newInputValue);
+            }}
+            renderOption={(props, option) => (
+              <Box component="li" {...props} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Typography variant="body1" fontWeight="bold">
+                  {option.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {option.ticker}
+                </Typography>
+              </Box>
+            )}
+            slotProps={{
+              paper: {
+                sx: {
+                  width: 'fit-content',
+                  minWidth: '100%',
+                }
+              }
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                label="Ticker Symbol"
+                placeholder="e.g., NVDA, AVGO, SPY"
+                sx={{ mb: 2 }}
+                required
+              />
+            )}
+          />
+        )}
 
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Condition Type</InputLabel>
