@@ -377,10 +377,6 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
               assetType === 'indicators' ? "e.g., 30, 1.0, 0.8" :
               conditionType === 'absolute_threshold' ? "e.g., 500, 1000, 150" : "e.g., 5, 10, 20"
             }
-            helperText={
-              assetType === 'indicators' ? "Enter the indicator value (e.g., 30 for VIX)" :
-              conditionType === 'absolute_threshold' ? "Enter the price level (e.g., 500 for $500)" : "Enter a positive number (e.g., 5 for 5%)"
-            }
             inputProps={{ step: "any", min: 0 }}
             required
           />
