@@ -26,8 +26,8 @@ class Settings(BaseSettings):
     # Supported tickers
     MARKET_INDICES: List[str] = ["SPY", "QQQ", "DIA", "IWM"]
     SECTOR_ETFs: List[str] = ["XLF", "XLE", "XLK", "XLV", "XLY", "XLP"]
-    VOLATILITY_INDICATORS: List[str] = ["VIX", "VXN", "RVX"]
-    SENTIMENT_INDICATORS: List[str] = ["PUT_CALL_RATIO"]
+    VOLATILITY_INDICATORS: List[str] = ["VIX", "^VIX", "VXN", "^VXN", "RVX"]
+    SENTIMENT_INDICATORS: List[str] = ["PCR"]
     COMMODITIES: List[str] = ["GLD", "USO", "SLV"]
 
     # Top stocks - fetched dynamically from index holdings or external APIs
@@ -37,9 +37,11 @@ class Settings(BaseSettings):
     # Indicator mappings (indicator -> reference asset)
     INDICATOR_REFERENCES: dict = {
         "VIX": "SPY",
+        "^VIX": "SPY",
         "VXN": "QQQ",
+        "^VXN": "QQQ",
         "RVX": "IWM",
-        "PUT_CALL_RATIO": "SPY",
+        "PCR": "SPY",
     }
 
     class Config:

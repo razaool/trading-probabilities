@@ -254,8 +254,11 @@ class ConstituentsService:
 
             # Volatility & Indicators
             "VIX": "CBOE Volatility Index",
+            "^VIX": "CBOE Volatility Index",
             "VXN": "Nasdaq-100 Volatility Index",
+            "^VXN": "Nasdaq-100 Volatility Index",
             "RVX": "Russell 2000 Volatility Index",
+            "PCR": "CBOE Total Put/Call Ratio",
 
             # Small Caps
             "SMCI": "Super Micro Computer",
