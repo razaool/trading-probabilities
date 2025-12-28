@@ -39,7 +39,8 @@
       "Bash(git rm:*)",
       "Bash(ipconfig:*)",
       "Bash(ip:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(kill:*)"
     ]
   }
 }
