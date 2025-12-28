@@ -192,14 +192,34 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
                 },
               }}
             >
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>Best / Worst</TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>Best</TableCell>
               {horizons.map((horizon) => {
                 const stats = data.summary_statistics[horizon];
                 return (
                   <TableCell key={horizon} align="center" sx={{ fontSize: { xs: '0.7rem', sm: '0.85rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                      <Box sx={{ color: '#2e7d32', fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>{formatPercentage(stats.max)}</Box>
-                      <Box sx={{ color: '#d32f2f', fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>{formatPercentage(stats.min)}</Box>
+                    <Box sx={{ color: '#2e7d32', fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                      {formatPercentage(stats.max)}
+                    </Box>
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+
+            <TableRow
+              sx={{
+                transition: 'background-color 0.2s ease',
+                '&:hover': {
+                  bgcolor: 'rgba(0, 0, 0, 0.04)',
+                },
+              }}
+            >
+              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>Worst</TableCell>
+              {horizons.map((horizon) => {
+                const stats = data.summary_statistics[horizon];
+                return (
+                  <TableCell key={horizon} align="center" sx={{ fontSize: { xs: '0.7rem', sm: '0.85rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>
+                    <Box sx={{ color: '#d32f2f', fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                      {formatPercentage(stats.min)}
                     </Box>
                   </TableCell>
                 );
