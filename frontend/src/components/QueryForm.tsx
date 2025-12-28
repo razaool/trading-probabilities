@@ -33,6 +33,7 @@ const ASSET_TYPE_OPTIONS = [
   { value: 'stocks', label: 'Stocks & ETFs' },
   { value: 'indicators', label: 'Indicators' },
   { value: 'commodities', label: 'Commodities' },
+  { value: 'sectors', label: 'Sector ETFs' },
 ];
 
 const INDICATOR_OPTIONS = [
@@ -45,6 +46,15 @@ const COMMODITY_OPTIONS = [
   { value: 'GLD', label: 'GLD', description: 'Gold (SPDR Gold Shares)' },
   { value: 'USO', label: 'USO', description: 'Oil (US Oil Fund)' },
   { value: 'SLV', label: 'SLV', description: 'Silver (iShares Silver Trust)' },
+];
+
+const SECTOR_ETF_OPTIONS = [
+  { value: 'XLF', label: 'XLF', description: 'Financial Select Sector SPDR' },
+  { value: 'XLE', label: 'XLE', description: 'Energy Select Sector SPDR' },
+  { value: 'XLK', label: 'XLK', description: 'Technology Select Sector SPDR' },
+  { value: 'XLV', label: 'XLV', description: 'Health Care Select Sector SPDR' },
+  { value: 'XLY', label: 'XLY', description: 'Consumer Discretionary Select Sector SPDR' },
+  { value: 'XLP', label: 'XLP', description: 'Consumer Staples Select Sector SPDR' },
 ];
 
 const DIRECTION_OPTIONS = [
@@ -78,7 +88,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   const [direction, setDirection] = useState<'increase' | 'decrease' | 'above' | 'below'>('increase');
   const [operator, setOperator] = useState<QueryRequest['operator']>('gte');
   const [timeHorizons, setTimeHorizons] = useState<QueryRequest['time_horizons']>(['1d', '1w', '1m', '1y']);
-  const [assetType, setAssetType] = useState<'stocks' | 'indicators' | 'commodities'>('stocks');
+  const [assetType, setAssetType] = useState<'stocks' | 'indicators' | 'commodities' | 'sectors'>('stocks');
 
   // Filter suggestions based on asset type
   const filteredSuggestions = suggestions.filter(suggestion => {
@@ -89,9 +99,12 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
     } else if (assetType === 'commodities') {
       // Show only commodities
       return ['GLD', 'USO', 'SLV'].includes(symbol);
+    } else if (assetType === 'sectors') {
+      // Show only sector ETFs
+      return ['XLF', 'XLE', 'XLK', 'XLV', 'XLY', 'XLP'].includes(symbol);
     } else {
-      // Hide indicators and commodities from stock/ETF view
-      return !['PCR', 'VIX', '^VIX', 'VXN', '^VXN', 'RVX', 'GLD', 'USO', 'SLV'].includes(symbol);
+      // Hide indicators, commodities, and sector ETFs from stock/ETF view
+      return !['PCR', 'VIX', '^VIX', 'VXN', '^VXN', 'RVX', 'GLD', 'USO', 'SLV', 'XLF', 'XLE', 'XLK', 'XLV', 'XLY', 'XLP'].includes(symbol);
     }
   });
 
@@ -116,7 +129,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   // Reset ticker when switching asset types
   const handleAssetTypeChange = (
     event: React.MouseEvent<HTMLElement>,
-    newAssetType: 'stocks' | 'indicators' | 'commodities' | null,
+    newAssetType: 'stocks' | 'indicators' | 'commodities' | 'sectors' | null,
   ) => {
     if (newAssetType) {
       setAssetType(newAssetType);
@@ -144,6 +157,12 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   const handleCommoditySelect = (commodityValue: string) => {
     setTicker(commodityValue);
     // Don't force condition type for commodities - let user choose
+  };
+
+  // Handle sector ETF button click
+  const handleSectorSelect = (sectorValue: string) => {
+    setTicker(sectorValue);
+    // Don't force condition type for sectors - let user choose
   };
 
   // Handle condition type change - reset direction if switching to/from absolute threshold
@@ -235,12 +254,17 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           <ToggleButton value="commodities" aria-label="Commodities">
             Commodities
           </ToggleButton>
+          <ToggleButton value="sectors" aria-label="Sector ETFs">
+            Sector ETFs
+          </ToggleButton>
         </ToggleButtonGroup>
         <Typography variant="caption" display="block" color="text.secondary">
           {assetType === 'indicators'
             ? 'Volatility and sentiment indicators (VIX, VXN, PCR)'
             : assetType === 'commodities'
             ? 'Gold, oil, and silver commodities'
+            : assetType === 'sectors'
+            ? 'Sector-specific ETFs (Financial, Energy, Tech, etc.)'
             : 'Individual stocks, ETFs, and market indices'}
         </Typography>
       </Box>
@@ -299,6 +323,36 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                   </Typography>
                   <Typography variant="caption" component="span">
                     {commodity.description}
+                  </Typography>
+                </Button>
+              ))}
+            </Stack>
+          </>
+        ) : assetType === 'sectors' ? (
+          <>
+            <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
+              Select Sector ETF
+            </Typography>
+            <Stack direction="row" spacing={1.5} sx={{ mb: 2 }} useFlexGap>
+              {SECTOR_ETF_OPTIONS.map((sector) => (
+                <Button
+                  key={sector.value}
+                  variant={ticker === sector.value ? "contained" : "outlined"}
+                  onClick={() => handleSectorSelect(sector.value)}
+                  sx={{
+                    flex: '0 0 calc(33.333% - 12px)',
+                    py: 1.5,
+                    textTransform: 'none',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    minWidth: 150,
+                  }}
+                >
+                  <Typography variant="h6" component="span" fontWeight="bold">
+                    {sector.label}
+                  </Typography>
+                  <Typography variant="caption" component="span">
+                    {sector.description}
                   </Typography>
                 </Button>
               ))}
