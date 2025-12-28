@@ -37,22 +37,21 @@ export default function HomePage() {
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        justifyContent: 'center',
         minHeight: '100vh',
         py: 4,
         px: 2,
       }}
     >
       <Container
-        maxWidth="xl"
+        maxWidth="lg"
         sx={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
         }}
       >
-        <Box sx={{ width: '100%', maxWidth: 1200, textAlign: 'center' }}>
+        <Box sx={{ width: '100%', textAlign: 'center' }}>
           <Box sx={{ mb: 4 }}>
             <h1>Historical Pattern Analysis Tool</h1>
             <p style={{ color: 'text.secondary' }}>
@@ -60,7 +59,7 @@ export default function HomePage() {
             </p>
           </Box>
 
-          <Box sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
+          <Box sx={{ maxWidth: 700, mx: 'auto', mb: 4 }}>
             <QueryForm onSubmit={handleQuery} loading={loading} />
           </Box>
 
@@ -71,14 +70,14 @@ export default function HomePage() {
           )}
 
           {error && (
-            <Alert severity="error" sx={{ mt: 3, maxWidth: 600, mx: 'auto' }}>
+            <Alert severity="error" sx={{ mt: 3, maxWidth: 700, mx: 'auto' }}>
               <AlertTitle>Error</AlertTitle>
               {error}
             </Alert>
           )}
 
           {results && !loading && (
-            <Box sx={{ width: '100%' }}>
+            <Box sx={{ width: '100%', maxWidth: 1000, mx: 'auto' }}>
               <SummaryStatistics data={results} />
               <ResultsTable data={results} />
             </Box>
