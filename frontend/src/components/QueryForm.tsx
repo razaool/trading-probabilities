@@ -333,19 +333,19 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
               Select Sector ETF
             </Typography>
-            <Stack direction="row" spacing={1.5} sx={{ mb: 2 }} useFlexGap>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 2 }}>
               {SECTOR_ETF_OPTIONS.map((sector) => (
                 <Button
                   key={sector.value}
                   variant={ticker === sector.value ? "contained" : "outlined"}
                   onClick={() => handleSectorSelect(sector.value)}
                   sx={{
-                    flex: '0 0 calc(33.333% - 12px)',
+                    flex: '1 1 calc(50% - 12px)',
                     py: 1.5,
                     textTransform: 'none',
                     flexDirection: 'column',
                     alignItems: 'flex-start',
-                    minWidth: 150,
+                    minWidth: 200,
                   }}
                 >
                   <Typography variant="h6" component="span" fontWeight="bold">
@@ -356,7 +356,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                   </Typography>
                 </Button>
               ))}
-            </Stack>
+            </Box>
           </>
         ) : (
           <Autocomplete
