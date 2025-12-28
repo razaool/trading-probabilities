@@ -32,12 +32,19 @@ const CONDITION_TYPES = [
 const ASSET_TYPE_OPTIONS = [
   { value: 'stocks', label: 'Stocks & ETFs' },
   { value: 'indicators', label: 'Indicators' },
+  { value: 'commodities', label: 'Commodities' },
 ];
 
 const INDICATOR_OPTIONS = [
   { value: '^VIX', label: 'VIX', description: 'CBOE Volatility Index' },
   { value: '^VXN', label: 'VXN', description: 'Nasdaq-100 Volatility Index' },
   { value: 'PCR', label: 'PCR', description: 'Put/Call Ratio' },
+];
+
+const COMMODITY_OPTIONS = [
+  { value: 'GLD', label: 'GLD', description: 'Gold (SPDR Gold Shares)' },
+  { value: 'USO', label: 'USO', description: 'Oil (US Oil Fund)' },
+  { value: 'SLV', label: 'SLV', description: 'Silver (iShares Silver Trust)' },
 ];
 
 const DIRECTION_OPTIONS = [
@@ -71,7 +78,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   const [direction, setDirection] = useState<'increase' | 'decrease' | 'above' | 'below'>('increase');
   const [operator, setOperator] = useState<QueryRequest['operator']>('gte');
   const [timeHorizons, setTimeHorizons] = useState<QueryRequest['time_horizons']>(['1d', '1w', '1m', '1y']);
-  const [assetType, setAssetType] = useState<'stocks' | 'indicators'>('stocks');
+  const [assetType, setAssetType] = useState<'stocks' | 'indicators' | 'commodities'>('stocks');
 
   // Filter suggestions based on asset type
   const filteredSuggestions = suggestions.filter(suggestion => {
@@ -79,9 +86,12 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
     if (assetType === 'indicators') {
       // Show only PCR, VIX, VXN indicators
       return ['PCR', 'VIX', '^VIX', 'VXN', '^VXN', 'RVX'].includes(symbol);
+    } else if (assetType === 'commodities') {
+      // Show only commodities
+      return ['GLD', 'USO', 'SLV'].includes(symbol);
     } else {
-      // Hide indicators from stock/ETF view
-      return !['PCR', 'VIX', '^VIX', 'VXN', '^VXN', 'RVX'].includes(symbol);
+      // Hide indicators and commodities from stock/ETF view
+      return !['PCR', 'VIX', '^VIX', 'VXN', '^VXN', 'RVX', 'GLD', 'USO', 'SLV'].includes(symbol);
     }
   });
 
@@ -106,14 +116,18 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   // Reset ticker when switching asset types
   const handleAssetTypeChange = (
     event: React.MouseEvent<HTMLElement>,
-    newAssetType: 'stocks' | 'indicators' | null,
+    newAssetType: 'stocks' | 'indicators' | 'commodities' | null,
   ) => {
     if (newAssetType) {
       setAssetType(newAssetType);
       setTicker('');
       setSuggestions([]);
       // Reset direction to appropriate default for the asset type
-      setDirection(newAssetType === 'indicators' ? 'above' : 'increase');
+      if (newAssetType === 'indicators') {
+        setDirection('above');
+      } else {
+        setDirection('increase');
+      }
     }
   };
 
@@ -124,6 +138,12 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
     setConditionType('absolute_threshold');
     // Reset direction to 'above' for indicators
     setDirection('above');
+  };
+
+  // Handle commodity button click
+  const handleCommoditySelect = (commodityValue: string) => {
+    setTicker(commodityValue);
+    // Don't force condition type for commodities - let user choose
   };
 
   // Handle condition type change - reset direction if switching to/from absolute threshold
@@ -212,10 +232,15 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           <ToggleButton value="indicators" aria-label="Indicators">
             Indicators
           </ToggleButton>
+          <ToggleButton value="commodities" aria-label="Commodities">
+            Commodities
+          </ToggleButton>
         </ToggleButtonGroup>
         <Typography variant="caption" display="block" color="text.secondary">
           {assetType === 'indicators'
             ? 'Volatility and sentiment indicators (VIX, VXN, PCR)'
+            : assetType === 'commodities'
+            ? 'Gold, oil, and silver commodities'
             : 'Individual stocks, ETFs, and market indices'}
         </Typography>
       </Box>
@@ -245,6 +270,35 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                   </Typography>
                   <Typography variant="caption" component="span">
                     {indicator.description}
+                  </Typography>
+                </Button>
+              ))}
+            </Stack>
+          </>
+        ) : assetType === 'commodities' ? (
+          <>
+            <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
+              Select Commodity
+            </Typography>
+            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+              {COMMODITY_OPTIONS.map((commodity) => (
+                <Button
+                  key={commodity.value}
+                  variant={ticker === commodity.value ? "contained" : "outlined"}
+                  onClick={() => handleCommoditySelect(commodity.value)}
+                  sx={{
+                    flex: 1,
+                    py: 1.5,
+                    textTransform: 'none',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  <Typography variant="h6" component="span" fontWeight="bold">
+                    {commodity.label}
+                  </Typography>
+                  <Typography variant="caption" component="span">
+                    {commodity.description}
                   </Typography>
                 </Button>
               ))}
