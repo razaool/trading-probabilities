@@ -15,7 +15,6 @@ import {
   Stack,
   ToggleButton,
   ToggleButtonGroup,
-  Chip,
 } from '@mui/material';
 import type { QueryRequest, TickerSuggestion } from '../types/api';
 import { apiService } from '../services/api';
@@ -235,15 +234,6 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                 </Button>
               ))}
             </Stack>
-            {ticker && (
-              <Box sx={{ mb: 2 }}>
-                <Chip
-                  label={`Selected: ${ticker}`}
-                  onDelete={() => setTicker('')}
-                  color="primary"
-                />
-              </Box>
-            )}
           </>
         ) : (
           <Autocomplete
