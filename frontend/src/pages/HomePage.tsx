@@ -3,6 +3,9 @@ import { Container, Box, CircularProgress, Alert, AlertTitle } from '@mui/materi
 import QueryForm from '../components/QueryForm';
 import ResultsTable from '../components/ResultsTable';
 import SummaryStatistics from '../components/SummaryStatistics';
+import GradientText from '../components/GradientText';
+import GlassSurface from '../components/GlassSurface';
+import FloatingLinesBackground from '../components/FloatingLinesBackground';
 import { apiService } from '../services/api';
 import type { QueryRequest, QueryResponse } from '../types/api';
 
@@ -34,57 +37,68 @@ export default function HomePage() {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        py: 4,
-        px: 2,
-      }}
-    >
+    <>
+      <FloatingLinesBackground />
       <Box
         sx={{
-          width: '100%',
-          maxWidth: 1000,
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          py: 4,
+          px: 2,
         }}
       >
-        <Box sx={{ width: '100%', textAlign: 'center' }}>
-          <Box sx={{ mb: 4 }}>
-            <h1>Historical Pattern Analysis Tool</h1>
-            <p style={{ color: 'text.secondary' }}>
-              Query historical market data and analyze forward returns
-            </p>
-          </Box>
-
-          <Box sx={{ maxWidth: 700, mx: 'auto', mb: 4 }}>
-            <QueryForm onSubmit={handleQuery} loading={loading} />
-          </Box>
-
-          {loading && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <CircularProgress />
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Box sx={{ width: '100%', textAlign: 'center' }}>
+            <Box sx={{ mb: 4 }}>
+              <h1>
+                <GradientText>Historical Pattern Analysis Tool</GradientText>
+              </h1>
+              <p style={{ color: 'text.secondary' }}>
+                Query historical market data and analyze forward returns
+              </p>
             </Box>
-          )}
 
-          {error && (
-            <Alert severity="error" sx={{ mt: 3, maxWidth: 700, mx: 'auto' }}>
-              <AlertTitle>Error</AlertTitle>
-              {error}
-            </Alert>
-          )}
-
-          {results && !loading && (
-            <Box sx={{ width: '100%' }}>
-              <SummaryStatistics data={results} />
-              <ResultsTable data={results} />
+            <Box sx={{ maxWidth: 700, mx: 'auto', mb: 4 }}>
+              <GlassSurface>
+                <QueryForm onSubmit={handleQuery} loading={loading} />
+              </GlassSurface>
             </Box>
-          )}
+
+            {loading && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress />
+              </Box>
+            )}
+
+            {error && (
+              <Alert severity="error" sx={{ mt: 3, maxWidth: 700, mx: 'auto' }}>
+                <AlertTitle>Error</AlertTitle>
+                {error}
+              </Alert>
+            )}
+
+            {results && !loading && (
+              <Box sx={{ width: '100%' }}>
+                <GlassSurface sx={{ mb: 2 }}>
+                  <SummaryStatistics data={results} />
+                </GlassSurface>
+                <GlassSurface>
+                  <ResultsTable data={results} />
+                </GlassSurface>
+              </Box>
+            )}
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </>
   );
 }

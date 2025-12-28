@@ -35,7 +35,8 @@
       "Bash(/tmp/check_final.py:*)",
       "Bash(chmod:*)",
       "Bash(/tmp/check_status.sh:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git rm:*)"
     ]
   }
 }

@@ -9,6 +9,8 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Chip,
+  TablePagination,
 } from '@mui/material';
 import type { QueryResponse } from '../types/api';
 
@@ -21,54 +23,148 @@ function formatPercentage(value: number | null | undefined): string {
   return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
 }
 
-function formatCellColor(value: number | null | undefined): React.CSSProperties {
-  if (value === null || value === undefined) return {};
-  return {
-    color: value >= 0 ? '#2e7d32' : '#d32f2f',
-    fontWeight: 'bold',
-  };
-}
-
 export default function ResultsTable({ data }: ResultsTableProps) {
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
+
   const timeHorizons = Object.keys(data.summary_statistics);
+  const horizonOrder = ['1d', '1w', '1m', '1y'].filter(h => h in data.summary_statistics);
+
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedInstances = data.instances.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Historical Occurrences
-      </Typography>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
-        {data.condition} - {data.total_occurrences} instances found
-      </Typography>
+    <Paper
+      elevation={0}
+      sx={{
+        p: 3,
+        mt: 2,
+        background: 'rgba(255, 255, 255, 0.03)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: 2,
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+        },
+      }}
+    >
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Historical Occurrences
+        </Typography>
+        <Chip
+          label={`${data.instances.length} total`}
+          size="small"
+          sx={{
+            bgcolor: 'action.hover',
+            fontWeight: 500,
+          }}
+        />
+      </Box>
 
-      <TableContainer sx={{ mt: 2 }}>
+      <TableContainer>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Date</TableCell>
-              {timeHorizons.map((horizon) => (
-                <TableCell key={horizon} align="right">
-                  {data.ticker} +{horizon.toUpperCase()}
+              <TableCell
+                sx={{
+                  borderBottom: '2px solid',
+                  borderColor: 'divider',
+                  fontWeight: 600,
+                }}
+              >
+                Date
+              </TableCell>
+              {horizonOrder.map((horizon) => (
+                <TableCell
+                  key={horizon}
+                  align="right"
+                  sx={{
+                    borderBottom: '2px solid',
+                    borderColor: 'divider',
+                    fontWeight: 600,
+                  }}
+                >
+                  {horizon.toUpperCase()}
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.instances.map((instance, index) => (
-              <TableRow key={index} hover>
-                <TableCell component="th" scope="row">
+            {paginatedInstances.map((instance, index) => (
+              <TableRow
+                key={index}
+                sx={{
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    bgcolor: 'rgba(0, 0, 0, 0.04)',
+                    transform: 'scale(1.01)',
+                  },
+                }}
+              >
+                <TableCell
+                  component="th"
+                  scope="row"
+                  sx={{
+                    fontWeight: 500,
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
                   {instance.date}
                 </TableCell>
-                {timeHorizons.map((horizon) => (
-                  <TableCell key={horizon} align="right" style={formatCellColor(instance.forward_returns[horizon])}>
-                    {formatPercentage(instance.forward_returns[horizon])}
-                  </TableCell>
-                ))}
+                {horizonOrder.map((horizon) => {
+                  const value = instance.forward_returns[horizon];
+                  const isPositive = value !== null && value !== undefined && value >= 0;
+                  return (
+                    <TableCell
+                      key={horizon}
+                      align="right"
+                      sx={{
+                        fontWeight: 600,
+                        color: isPositive ? '#2e7d32' : '#d32f2f',
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      {formatPercentage(value)}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <TablePagination
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        component="div"
+        count={data.instances.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{
+          '.MuiTablePagination-select': {
+            paddingTop: 1,
+            paddingBottom: 1,
+          },
+        }}
+      />
     </Paper>
   );
 }

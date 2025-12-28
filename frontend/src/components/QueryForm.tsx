@@ -18,6 +18,8 @@ import {
 } from '@mui/material';
 import type { QueryRequest, TickerSuggestion } from '../types/api';
 import { apiService } from '../services/api';
+import SlidingToggleGroup from './SlidingToggleGroup';
+import SlidingButtonGroup from './SlidingButtonGroup';
 
 interface QueryFormProps {
   onSubmit: (query: QueryRequest) => void;
@@ -127,12 +129,9 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   }, [ticker]);
 
   // Reset ticker when switching asset types
-  const handleAssetTypeChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newAssetType: 'stocks' | 'indicators' | 'commodities' | 'sectors' | null,
-  ) => {
-    if (newAssetType) {
-      setAssetType(newAssetType);
+  const handleAssetTypeChange = (newAssetType: string) => {
+    if (newAssetType && typeof newAssetType === 'string') {
+      setAssetType(newAssetType as 'stocks' | 'indicators' | 'commodities' | 'sectors');
       setTicker('');
       setSuggestions([]);
       // Reset direction to appropriate default for the asset type
@@ -232,41 +231,17 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
         Query Historical Patterns
       </Typography>
 
       <Box sx={{ mb: 3 }}>
-        <ToggleButtonGroup
+        <SlidingToggleGroup
           value={assetType}
-          exclusive
           onChange={handleAssetTypeChange}
-          aria-label="Asset Type"
-          sx={{ mb: 1 }}
-        >
-          <ToggleButton value="stocks" aria-label="Stocks & ETFs">
-            Stocks & ETFs
-          </ToggleButton>
-          <ToggleButton value="indicators" aria-label="Indicators">
-            Indicators
-          </ToggleButton>
-          <ToggleButton value="commodities" aria-label="Commodities">
-            Commodities
-          </ToggleButton>
-          <ToggleButton value="sectors" aria-label="Sector ETFs">
-            Sector ETFs
-          </ToggleButton>
-        </ToggleButtonGroup>
-        <Typography variant="caption" display="block" color="text.secondary">
-          {assetType === 'indicators'
-            ? 'Volatility and sentiment indicators (VIX, VXN, PCR)'
-            : assetType === 'commodities'
-            ? 'Gold, oil, and silver commodities'
-            : assetType === 'sectors'
-            ? 'Sector-specific ETFs (Financial, Energy, Tech, etc.)'
-            : 'Individual stocks, ETFs, and market indices'}
-        </Typography>
+          options={ASSET_TYPE_OPTIONS}
+        />
       </Box>
 
       <Box component="form" onSubmit={handleSubmit}>
@@ -275,58 +250,22 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
               Select Indicator
             </Typography>
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-              {INDICATOR_OPTIONS.map((indicator) => (
-                <Button
-                  key={indicator.value}
-                  variant={ticker === indicator.value ? "contained" : "outlined"}
-                  onClick={() => handleIndicatorSelect(indicator.value)}
-                  sx={{
-                    flex: 1,
-                    py: 1.5,
-                    textTransform: 'none',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  <Typography variant="h6" component="span" fontWeight="bold">
-                    {indicator.label}
-                  </Typography>
-                  <Typography variant="caption" component="span">
-                    {indicator.description}
-                  </Typography>
-                </Button>
-              ))}
-            </Stack>
+            <SlidingButtonGroup
+              value={ticker}
+              onChange={handleIndicatorSelect}
+              options={INDICATOR_OPTIONS}
+            />
           </>
         ) : assetType === 'commodities' ? (
           <>
             <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
               Select Commodity
             </Typography>
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-              {COMMODITY_OPTIONS.map((commodity) => (
-                <Button
-                  key={commodity.value}
-                  variant={ticker === commodity.value ? "contained" : "outlined"}
-                  onClick={() => handleCommoditySelect(commodity.value)}
-                  sx={{
-                    flex: 1,
-                    py: 1.5,
-                    textTransform: 'none',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  <Typography variant="h6" component="span" fontWeight="bold">
-                    {commodity.label}
-                  </Typography>
-                  <Typography variant="caption" component="span">
-                    {commodity.description}
-                  </Typography>
-                </Button>
-              ))}
-            </Stack>
+            <SlidingButtonGroup
+              value={ticker}
+              onChange={handleCommoditySelect}
+              options={COMMODITY_OPTIONS}
+            />
           </>
         ) : assetType === 'sectors' ? (
           <>
@@ -334,28 +273,11 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
               Select Sector ETF
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 2 }}>
-              {SECTOR_ETF_OPTIONS.map((sector) => (
-                <Button
-                  key={sector.value}
-                  variant={ticker === sector.value ? "contained" : "outlined"}
-                  onClick={() => handleSectorSelect(sector.value)}
-                  sx={{
-                    flex: '1 1 calc(50% - 12px)',
-                    py: 1.5,
-                    textTransform: 'none',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    minWidth: 200,
-                  }}
-                >
-                  <Typography variant="h6" component="span" fontWeight="bold">
-                    {sector.label}
-                  </Typography>
-                  <Typography variant="caption" component="span">
-                    {sector.description}
-                  </Typography>
-                </Button>
-              ))}
+              <SlidingButtonGroup
+                value={ticker}
+                onChange={handleSectorSelect}
+                options={SECTOR_ETF_OPTIONS}
+              />
             </Box>
           </>
         ) : (
@@ -403,7 +325,23 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                 fullWidth
                 label="Ticker Symbol"
                 placeholder="e.g., NVDA, AVGO, SPY"
-                sx={{ mb: 2 }}
+                sx={{
+                  mb: 2,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                    },
+                    '&.Mui-focused': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: 2,
+                      },
+                    },
+                  },
+                }}
                 required
               />
             )}
@@ -417,6 +355,18 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             label="Condition Type"
             onChange={(e) => handleConditionTypeChange(e.target.value as QueryRequest['condition_type'])}
             disabled={assetType === 'indicators'}
+            sx={{
+              borderRadius: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main',
+                  },
+                },
+              },
+            }}
           >
             {CONDITION_TYPES.map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -444,6 +394,18 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                 conditionType === 'absolute_threshold' ? 'Price Level' : 'Direction'
               }
               onChange={(e) => setDirection(e.target.value as 'increase' | 'decrease' | 'above' | 'below')}
+              sx={{
+                borderRadius: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'primary.main',
+                    },
+                  },
+                },
+              }}
             >
               {(assetType === 'indicators' || conditionType === 'absolute_threshold'
                 ? INDICATOR_DIRECTION_OPTIONS
@@ -462,6 +424,18 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                 value={operator}
                 label="Match Type"
                 onChange={(e) => setOperator(e.target.value as QueryRequest['operator'])}
+                sx={{
+                  borderRadius: 2,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'primary.main',
+                      },
+                    },
+                  },
+                }}
               >
                 {OPERATOR_OPTIONS.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -473,7 +447,23 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           )}
 
           <TextField
-            sx={{ flex: assetType === 'indicators' ? 1 : 1 }}
+            sx={{
+              flex: assetType === 'indicators' ? 1 : 1,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main',
+                  },
+                },
+                '&.Mui-focused': {
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderWidth: 2,
+                  },
+                },
+              },
+            }}
             label={
               assetType === 'indicators' ? 'Threshold Value' :
               conditionType === 'absolute_threshold' ? 'Price Level ($)' : 'Percentage'
@@ -498,6 +488,18 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             label="Time Horizons"
             onChange={handleTimeHorizonChange}
             renderValue={(selected) => selected.map((h) => TIME_HORIZONS.find(th => th.value === h)?.label).join(', ')}
+            sx={{
+              borderRadius: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main',
+                  },
+                },
+              },
+            }}
           >
             {TIME_HORIZONS.map((horizon) => (
               <MenuItem key={horizon.value} value={horizon.value}>
@@ -514,10 +516,25 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           type="submit"
           disabled={loading}
           size="large"
+          sx={{
+            borderRadius: 2,
+            py: 1.5,
+            fontWeight: 600,
+            textTransform: 'none',
+            fontSize: '1rem',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+            },
+            '&:active': {
+              transform: 'translateY(0)',
+            },
+          }}
         >
           {loading ? 'Analyzing...' : 'Query Historical Data'}
         </Button>
       </Box>
-    </Paper>
+    </Box>
   );
 }
