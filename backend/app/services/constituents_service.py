@@ -3,6 +3,8 @@ Service for fetching ETF constituents
 """
 
 from typing import List, Dict
+import csv
+import os
 
 
 class ConstituentsService:
@@ -338,6 +340,27 @@ class ConstituentsService:
             "SPY": self.spy_holdings,
             "IWM": self.iwm_holdings,
         }
+
+        # Load additional company names from SPY components CSV
+        self._load_company_names_from_csv()
+
+    def _load_company_names_from_csv(self):
+        """Load company names from SPY-components.csv file"""
+        csv_path = os.path.join(os.path.dirname(__file__), '../../../data/SPY-components.csv')
+
+        if os.path.exists(csv_path):
+            try:
+                with open(csv_path, 'r', encoding='utf-8-sig') as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        if row and len(row) >= 2:
+                            ticker = row[0].strip()
+                            company_name = row[1].strip()
+                            # Only add if not already in ticker_names (prefer hardcoded names)
+                            if ticker and ticker not in self.ticker_names:
+                                self.ticker_names[ticker] = company_name
+            except Exception as e:
+                print(f"Warning: Could not load company names from CSV: {e}")
 
     async def get_etf_holdings(self, etf_ticker: str) -> List[str]:
         """
