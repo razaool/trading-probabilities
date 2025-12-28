@@ -56,7 +56,6 @@ export default function HomePage() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            minWidth: { xs: 375, sm: 'auto' },
           }}
         >
           <Box sx={{ width: '100%', textAlign: 'center' }}>

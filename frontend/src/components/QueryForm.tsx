@@ -231,12 +231,12 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, minWidth: { xs: 340, sm: 'auto' } }}>
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+    <Box sx={{ p: { xs: 1.5, sm: 3 } }}>
+      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: { xs: 2, sm: 3 } }}>
         Query Historical Patterns
       </Typography>
 
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: { xs: 2, sm: 3 } }}>
         <SlidingToggleGroup
           value={assetType}
           onChange={handleAssetTypeChange}
@@ -250,7 +250,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
               Select Indicator
             </Typography>
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: { xs: 1.5, sm: 2 } }}>
               <SlidingButtonGroup
                 value={ticker}
                 onChange={handleIndicatorSelect}
@@ -263,7 +263,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
               Select Commodity
             </Typography>
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: { xs: 1.5, sm: 2 } }}>
               <SlidingButtonGroup
                 value={ticker}
                 onChange={handleCommoditySelect}
@@ -276,7 +276,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
               Select Sector ETF
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 2 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 1.5 }, mb: { xs: 1.5, sm: 2 } }}>
               <SlidingButtonGroup
                 value={ticker}
                 onChange={handleSectorSelect}
@@ -352,7 +352,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           />
         )}
 
-        <FormControl fullWidth sx={{ mb: 2 }}>
+        <FormControl fullWidth sx={{ mb: { xs: 1.5, sm: 2 } }}>
           <InputLabel>Condition Type</InputLabel>
           <Select
             value={conditionType}
@@ -380,7 +380,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           </Select>
         </FormControl>
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, mb: { xs: 1.5, sm: 2 } }}>
           <FormControl sx={{ flex: assetType === 'indicators' ? 1 : 1 }}>
             <InputLabel>
               {assetType === 'indicators' ? 'Condition' :
@@ -479,7 +479,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           />
         </Box>
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
+        <FormControl fullWidth sx={{ mb: { xs: 2, sm: 3 } }}>
           <InputLabel>Time Horizons</InputLabel>
           <Select
             multiple

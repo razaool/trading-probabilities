@@ -64,16 +64,3 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
-
-/* Mobile-only horizontal scrolling for small phones (iPhone) */
-@media (max-width: 430px) {
-  body {
-    overflow-x: auto;
-  }
-
-  /* Enable horizontal scrolling for the main app container */
-  #root {
-    min-width: 100%;
-    width: fit-content;
-  }
-}
