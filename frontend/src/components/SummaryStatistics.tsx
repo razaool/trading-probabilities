@@ -54,7 +54,7 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 3 },
         mt: 2,
         background: 'rgba(255, 255, 255, 0.03)',
         backdropFilter: 'blur(10px)',
@@ -68,15 +68,15 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
       }}
     >
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
           Summary Statistics
         </Typography>
       </Box>
-      <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontStyle: 'italic' }}>
+      <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontStyle: 'italic', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
         {data.condition}
       </Typography>
 
-      <TableContainer sx={{ mt: 3 }}>
+      <TableContainer sx={{ mt: { xs: 2, sm: 3 }, overflowX: 'auto' }}>
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -86,6 +86,8 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
                   borderColor: 'divider',
                   fontWeight: 600,
                   color: 'text.primary',
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  padding: { xs: '6px 4px', sm: '16px' },
                 }}
               >
                 Metric
@@ -99,6 +101,8 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
                     borderColor: 'divider',
                     fontWeight: 600,
                     color: 'text.primary',
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    padding: { xs: '6px 4px', sm: '16px' },
                   }}
                 >
                   {horizonLabels[horizon] || horizon.toUpperCase()}
@@ -115,16 +119,16 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
                 },
               }}
             >
-              <TableCell sx={{ fontWeight: 500 }}>Average Return</TableCell>
+              <TableCell sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>Average Return</TableCell>
               {horizons.map((horizon) => {
                 const stats = data.summary_statistics[horizon];
                 return (
-                  <TableCell key={horizon} align="center">
+                  <TableCell key={horizon} align="center" sx={{ padding: { xs: '6px 4px', sm: '16px' } }}>
                     <Box
                       sx={{
                         color: getColorForValue(stats.mean),
                         fontWeight: 700,
-                        fontSize: '1rem',
+                        fontSize: { xs: '0.8rem', sm: '1rem' },
                       }}
                     >
                       {formatPercentage(stats.mean)}
@@ -142,15 +146,16 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
                 },
               }}
             >
-              <TableCell sx={{ fontWeight: 500 }}>Win Rate</TableCell>
+              <TableCell sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>Win Rate</TableCell>
               {horizons.map((horizon) => {
                 const stats = data.summary_statistics[horizon];
                 return (
-                  <TableCell key={horizon} align="center">
+                  <TableCell key={horizon} align="center" sx={{ padding: { xs: '6px 4px', sm: '16px' } }}>
                     <Box
                       sx={{
                         color: getColorForValue(stats.win_rate, true),
                         fontWeight: 700,
+                        fontSize: { xs: '0.8rem', sm: '1rem' },
                       }}
                     >
                       {formatWinRate(stats.win_rate)}
@@ -168,11 +173,11 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
                 },
               }}
             >
-              <TableCell>Median Return</TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>Median Return</TableCell>
               {horizons.map((horizon) => {
                 const stats = data.summary_statistics[horizon];
                 return (
-                  <TableCell key={horizon} align="center" sx={{ fontWeight: 500 }}>
+                  <TableCell key={horizon} align="center" sx={{ fontWeight: 500, fontSize: { xs: '0.75rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>
                     {formatPercentage(stats.median)}
                   </TableCell>
                 );
@@ -187,14 +192,14 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
                 },
               }}
             >
-              <TableCell>Best / Worst</TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>Best / Worst</TableCell>
               {horizons.map((horizon) => {
                 const stats = data.summary_statistics[horizon];
                 return (
-                  <TableCell key={horizon} align="center" sx={{ fontSize: '0.85rem' }}>
+                  <TableCell key={horizon} align="center" sx={{ fontSize: { xs: '0.7rem', sm: '0.85rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                      <Box sx={{ color: '#2e7d32', fontWeight: 500 }}>{formatPercentage(stats.max)}</Box>
-                      <Box sx={{ color: '#d32f2f', fontWeight: 500 }}>{formatPercentage(stats.min)}</Box>
+                      <Box sx={{ color: '#2e7d32', fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>{formatPercentage(stats.max)}</Box>
+                      <Box sx={{ color: '#d32f2f', fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>{formatPercentage(stats.min)}</Box>
                     </Box>
                   </TableCell>
                 );
@@ -209,11 +214,11 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
                 },
               }}
             >
-              <TableCell>Std Deviation</TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>Std Deviation</TableCell>
               {horizons.map((horizon) => {
                 const stats = data.summary_statistics[horizon];
                 return (
-                  <TableCell key={horizon} align="center">
+                  <TableCell key={horizon} align="center" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, padding: { xs: '6px 4px', sm: '16px' } }}>
                     {formatPercentage(stats.std)}
                   </TableCell>
                 );
