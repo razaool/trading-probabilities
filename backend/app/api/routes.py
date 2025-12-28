@@ -2,14 +2,26 @@
 API route definitions
 """
 
-from fastapi import APIRouter, HTTPException, Query as QueryParam
+from fastapi import APIRouter, HTTPException, Query as QueryParam, Depends, Request
 from typing import List
 from app.models.schemas import QueryRequest, QueryResponse, TickerListResponse
 from app.services.query_service import query_service
 from app.services.constituents_service import constituents_service
 from app.core.config import settings
+from app.core.security import verify_api_key
+from app.core.rate_limit import limiter
 
 router = APIRouter()
+
+# Authentication dependency - can be enabled via REQUIRE_AUTH env var
+auth_required = Depends(verify_api_key)
+
+# Rate limiting decorator (conditional based on settings)
+def limiter_if_enabled(func):
+    """Apply rate limiting only if enabled in settings"""
+    if settings.ENABLE_RATE_LIMIT:
+        return limiter.limit(f"{settings.RATE_LIMIT_PER_MINUTE}/minute")(func)
+    return func
 
 
 @router.get("/tickers", response_model=TickerListResponse)
@@ -25,8 +37,9 @@ async def get_available_tickers():
     )
 
 
-@router.post("/query", response_model=QueryResponse)
-async def query_historical_patterns(query: QueryRequest):
+@limiter_if_enabled
+@router.post("/query", response_model=QueryResponse, dependencies=[auth_required])
+async def query_historical_patterns(request: Request, query: QueryRequest):
     """
     Query historical patterns and get forward returns
 
@@ -63,8 +76,9 @@ async def suggest_tickers(q: str = QueryParam(..., min_length=1, description="Se
         raise HTTPException(status_code=500, detail=f"Error fetching suggestions: {str(e)}")
 
 
-@router.get("/tickers/etf/{etf_ticker}")
-async def get_etf_constituents(etf_ticker: str):
+@limiter_if_enabled
+@router.get("/tickers/etf/{etf_ticker}", dependencies=[auth_required])
+async def get_etf_constituents(request: Request, etf_ticker: str):
     """
     Get constituents for a specific ETF
 
@@ -81,8 +95,10 @@ async def get_etf_constituents(etf_ticker: str):
         raise HTTPException(status_code=500, detail=f"Error fetching constituents: {str(e)}")
 
 
-@router.get("/prices/{ticker}")
+@limiter_if_enabled
+@router.get("/prices/{ticker}", dependencies=[auth_required])
 async def get_historical_prices(
+    request: Request,
     ticker: str,
     start_date: str = QueryParam(None, description="Start date (YYYY-MM-DD)"),
     end_date: str = QueryParam(None, description="End date (YYYY-MM-DD)")

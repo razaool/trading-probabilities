@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Historical Pattern Analysis Tool"
 
     # CORS
+    # For production, ALWAYS override this via environment variable
+    # Format: comma-separated URLs or ["http://example.com", "https://example.com"]
+    # To allow all origins (NOT recommended for production): CORS_ORIGINS=["*"]
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:5173",
@@ -48,6 +51,15 @@ class Settings(BaseSettings):
         "^VXN": "QQQ",
         "PCR": "SPY",
     }
+
+    # Security
+    API_KEYS: List[str] = []  # Empty means no auth required (dev mode)
+    REQUIRE_AUTH: bool = False  # Can be enabled via environment variable
+
+    # Rate Limiting
+    ENABLE_RATE_LIMIT: bool = True
+    RATE_LIMIT_PER_MINUTE: int = 10  # Requests per minute per IP
+    RATE_LIMIT_BURST: int = 20  # Burst size
 
     class Config:
         env_file = ".env"
