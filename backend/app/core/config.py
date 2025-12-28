@@ -24,9 +24,9 @@ class Settings(BaseSettings):
     DATA_CACHE_TTL: int = 86400  # 24 hours in seconds
 
     # Supported tickers
-    MARKET_INDICES: List[str] = ["SPY", "QQQ", "DIA", "IWM"]
+    MARKET_INDICES: List[str] = ["SPY", "QQQ", "DIA"]
     SECTOR_ETFs: List[str] = ["XLF", "XLE", "XLK", "XLV", "XLY", "XLP"]
-    VOLATILITY_INDICATORS: List[str] = ["VIX", "^VIX", "VXN", "^VXN", "RVX"]
+    VOLATILITY_INDICATORS: List[str] = ["VIX", "^VIX", "VXN", "^VXN"]
     SENTIMENT_INDICATORS: List[str] = ["PCR"]
     COMMODITIES: List[str] = ["GLD", "USO", "SLV"]
 
@@ -40,7 +40,6 @@ class Settings(BaseSettings):
         "^VIX": "SPY",
         "VXN": "QQQ",
         "^VXN": "QQQ",
-        "RVX": "IWM",
         "PCR": "SPY",
     }
 

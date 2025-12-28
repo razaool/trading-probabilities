@@ -17,7 +17,25 @@
       "Bash(./venv/bin/pip:*)",
       "Bash(./venv/bin/python:*)",
       "Bash(../venv/bin/python:*)",
-      "Bash(/Users/razaool/trading-probabilities/venv/bin/python:*)"
+      "Bash(/Users/razaool/trading-probabilities/venv/bin/python:*)",
+      "Bash(/Users/razaool/trading-probabilities/venv/bin/pip install:*)",
+      "Bash(sqlite3:*)",
+      "Bash(cat <<'EOF'\nimport csv\nimport sqlite3\n\n# Read QQQ components\nwith open\\('/Users/razaool/trading-probabilities/data/QQQ-components.csv', 'r', encoding='utf-8-sig'\\) as f:\n    reader = csv.DictReader\\(f\\)\n    qqq_tickers = [row['Symbol'] for row in reader]\n\n# Check which ones are in database\nconn = sqlite3.connect\\('/Users/razaool/trading-probabilities/backend/data/trading_patterns.db'\\)\ncursor = conn.cursor\\(\\)\ncursor.execute\\(\"SELECT DISTINCT ticker FROM historical_prices\"\\)\ndb_tickers = [row[0] for row in cursor.fetchall\\(\\)]\nconn.close\\(\\)\n\n# Find missing tickers\nmissing = [t for t in qqq_tickers if t not in db_tickers]\n\nprint\\(f\"Total QQQ components: {len\\(qqq_tickers\\)}\"\\)\nprint\\(f\"Already in database: {len\\(db_tickers\\)}\"\\)\nprint\\(f\"Still need to fetch: {len\\(missing\\)}\"\\)\nprint\\(\\)\nprint\\(\"Tickers to fetch:\"\\)\nfor ticker in missing:\n    print\\(f\"  {ticker}\"\\)\nEOF)",
+      "Bash(cat <<'EOF'\nimport asyncio\nimport sys\nsys.path.insert\\(0, '/Users/razaool/trading-probabilities/backend'\\)\n\nfrom app.services.data_service import data_service\n\n# List of tickers to fetch\nTICKERS_TO_FETCH = [\n    \"GOOG\", \"AVGO\", \"PLTR\", \"NFLX\", \"COST\", \"AMD\", \"MU\", \"CSCO\", \"APP\", \"LRCX\",\n    \"TMUS\", \"AMAT\", \"SHOP\", \"ISRG\", \"LIN\", \"PEP\", \"INTU\", \"QCOM\", \"AMGN\", \"BKNG\",\n    \"INTC\", \"KLAC\", \"TXN\", \"GILD\", \"ADBE\", \"ADI\", \"PANW\", \"HON\", \"CRWD\", \"VRTX\",\n    \"CEG\", \"CMCSA\", \"ADP\", \"MELI\", \"SBUX\", \"ASML\", \"DASH\", \"SNPS\", \"CDNS\", \"MAR\",\n    \"REGN\", \"ORLY\", \"CTAS\", \"MNST\", \"PDD\", \"MRVL\", \"WBD\", \"MDLZ\", \"CSX\", \"ADSK\",\n    \"AEP\", \"FTNT\", \"WDC\", \"STX\", \"ROST\", \"TRI\", \"PCAR\", \"ABNB\", \"NXPI\", \"PYPL\",\n    \"IDXX\", \"ALNY\", \"AZN\", \"EA\", \"FAST\", \"ROP\", \"FER\", \"TTWO\", \"WDAY\", \"MPWR\",\n    \"AXON\", \"BKR\", \"EXC\", \"DDOG\", \"XEL\", \"FANG\", \"MSTR\", \"CCEP\", \"CTSH\", \"PAYX\",\n    \"GEHC\", \"KDP\", \"INSM\", \"CPRT\", \"ZS\", \"MCHP\", \"ODFL\", \"VRSK\", \"KHC\", \"TEAM\",\n    \"CSGP\", \"CHTR\", \"DXCM\", \"ARM\"\n]\n\nasync def fetch_batch\\(tickers\\):\n    \"\"\"Fetch a batch of tickers\"\"\"\n    for ticker in tickers:\n        try:\n            print\\(f\"Fetching {ticker}...\"\\)\n            await data_service.fetch_historical_data\\(ticker, period=\"max\"\\)\n            print\\(f\"✅ {ticker} fetched successfully\"\\)\n        except Exception as e:\n            print\\(f\"❌ {ticker} failed: {e}\"\\)\n\nasync def main\\(\\):\n    print\\(\"=\" * 60\\)\n    print\\(f\"Fetching {len\\(TICKERS_TO_FETCH\\)} QQQ components\"\\)\n    print\\(\"=\" * 60\\)\n    print\\(\\)\n    \n    await fetch_batch\\(TICKERS_TO_FETCH\\)\n    \n    print\\(\\)\n    print\\(\"=\" * 60\\)\n    print\\(\"✅ Fetching complete!\"\\)\n    print\\(\"=\" * 60\\)\n\nif __name__ == \"__main__\":\n    asyncio.run\\(main\\(\\)\\)\nEOF)",
+      "Bash(cat:*)",
+      "Bash({)",
+      "Bash(\"ticker\": \"AAPL\",)",
+      "Bash(\"condition_type\": \"percentage_change\",)",
+      "Bash(\"threshold\": -5,)",
+      "Bash(\"operator\": \"lt\",)",
+      "Bash(\"time_horizons\": [\"1d\", \"1w\"])",
+      "Bash(})",
+      "Bash(EOF)",
+      "Bash(git restore:*)",
+      "Bash(/tmp/check_final.py:*)",
+      "Bash(chmod:*)",
+      "Bash(/tmp/check_status.sh:*)",
+      "Bash(git push:*)"
     ]
   }
 }

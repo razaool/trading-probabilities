@@ -132,12 +132,12 @@ trading-probabilities/
 
 ### Supported Assets
 
-- **Market Indices**: SPY, QQQ, DIA, IWM
+- **Market Indices**: SPY, QQQ, DIA
 - **Sector ETFs**: XLF, XLE, XLK, XLV, XLY, XLP
-- **Volatility Indicators**: VIX, VXN, RVX
+- **Volatility Indicators**: VIX, VXN
 - **Sentiment Indicators**: Put/Call Ratio
 - **Commodities**: GLD, USO, SLV
-- **Top 100 Stocks** (coming soon)
+- **Top 500+ Stocks**: Components from SPY and QQQ indices
 
 ## API Endpoints
 
