@@ -225,7 +225,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
     });
   };
 
-  const handleTimeHorizonChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleTimeHorizonChange = (event: any) => {
     const value = event.target.value as string[];
     setTimeHorizons(typeof value === 'string' ? value.split(',') as QueryRequest['time_horizons'] : value as QueryRequest['time_horizons']);
   };
@@ -491,7 +491,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             value={timeHorizons}
             label="Time Horizons"
             onChange={handleTimeHorizonChange}
-            renderValue={(selected) => selected.map((h) => TIME_HORIZONS.find(th => th.value === h)?.label).join(', ')}
+            renderValue={(selected: any) => selected.map((h: string) => TIME_HORIZONS.find(th => th.value === h)?.label).join(', ')}
             sx={{
               borderRadius: 2,
               '& .MuiOutlinedInput-root': {
