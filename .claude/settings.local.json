@@ -36,7 +36,9 @@
       "Bash(chmod:*)",
       "Bash(/tmp/check_status.sh:*)",
       "Bash(git push:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(ipconfig:*)",
+      "Bash(ip:*)"
     ]
   }
 }
