@@ -4,6 +4,7 @@ import { ThemeProvider, CssBaseline, IconButton, Box } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import GitHubIcon from '@mui/icons-material/GitHub';
 import HomePage from './pages/HomePage';
 import { createLightTheme, createDarkTheme } from './theme';
 
@@ -37,8 +38,25 @@ function App() {
             top: 16,
             right: 16,
             zIndex: 9999,
+            display: 'flex',
+            gap: 1,
           }}
         >
+          <IconButton
+            href="https://github.com/razaool/trading-probabilities"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="inherit"
+            sx={{
+              bgcolor: 'background.paper',
+              boxShadow: 3,
+              '&:hover': {
+                bgcolor: 'background.default',
+              },
+            }}
+          >
+            <GitHubIcon />
+          </IconButton>
           <IconButton
             onClick={toggleColorMode}
             color="inherit"

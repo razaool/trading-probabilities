@@ -24,6 +24,28 @@ export default function SlidingToggleGroup({ value, onChange, options }: Sliding
         width: selectedChild.offsetWidth,
       });
     }
+
+    // Recalculate on window resize and orientation change
+    const handleResize = () => {
+      if (!containerRef.current) return;
+      const updatedContainer = containerRef.current;
+      const updatedIndex = options.findIndex((opt) => opt.value === value);
+      const updatedChild = updatedContainer.children[updatedIndex + 1] as HTMLElement;
+
+      if (updatedChild) {
+        setPosition({
+          left: updatedChild.offsetLeft,
+          width: updatedChild.offsetWidth,
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
   }, [value, options]);
 
   return (
