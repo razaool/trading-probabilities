@@ -43,9 +43,10 @@ export default function HomePage() {
         px: 2,
       }}
     >
-      <Container
-        maxWidth="lg"
+      <Box
         sx={{
+          width: '100%',
+          maxWidth: 1000,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -77,13 +78,13 @@ export default function HomePage() {
           )}
 
           {results && !loading && (
-            <Box sx={{ width: '100%', maxWidth: 1000, mx: 'auto' }}>
+            <Box sx={{ width: '100%' }}>
               <SummaryStatistics data={results} />
               <ResultsTable data={results} />
             </Box>
           )}
         </Box>
-      </Container>
+      </Box>
     </Box>
   );
 }
