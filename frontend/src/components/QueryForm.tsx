@@ -13,6 +13,8 @@ import {
   ListItemText,
   Autocomplete,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import type { QueryRequest, TickerSuggestion } from '../types/api';
 import { apiService } from '../services/api';
@@ -25,6 +27,11 @@ interface QueryFormProps {
 const CONDITION_TYPES = [
   { value: 'percentage_change', label: 'Percentage Change' },
   { value: 'absolute_threshold', label: 'Absolute Threshold' },
+];
+
+const ASSET_TYPE_OPTIONS = [
+  { value: 'stocks', label: 'Stocks & ETFs' },
+  { value: 'indicators', label: 'Indicators' },
 ];
 
 const DIRECTION_OPTIONS = [
@@ -53,6 +60,19 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   const [direction, setDirection] = useState<'increase' | 'decrease'>('increase');
   const [operator, setOperator] = useState<QueryRequest['operator']>('gte');
   const [timeHorizons, setTimeHorizons] = useState<QueryRequest['time_horizons']>(['1d', '1w', '1m', '1y']);
+  const [assetType, setAssetType] = useState<'stocks' | 'indicators'>('stocks');
+
+  // Filter suggestions based on asset type
+  const filteredSuggestions = suggestions.filter(suggestion => {
+    const symbol = suggestion.ticker.toUpperCase();
+    if (assetType === 'indicators') {
+      // Show only PCR, VIX, VXN indicators
+      return ['PCR', 'VIX', '^VIX', 'VXN', '^VXN', 'RVX'].includes(symbol);
+    } else {
+      // Hide indicators from stock/ETF view
+      return !['PCR', 'VIX', '^VIX', 'VXN', '^VXN', 'RVX'].includes(symbol);
+    }
+  });
 
   // Fetch suggestions when ticker changes
   useEffect(() => {
@@ -71,6 +91,18 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
       setSuggestions([]);
     }
   }, [ticker]);
+
+  // Reset ticker when switching asset types
+  const handleAssetTypeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newAssetType: 'stocks' | 'indicators' | null,
+  ) => {
+    if (newAssetType) {
+      setAssetType(newAssetType);
+      setTicker('');
+      setSuggestions([]);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,10 +152,33 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
       <Typography variant="h6" gutterBottom>
         Query Historical Patterns
       </Typography>
+
+      <Box sx={{ mb: 3 }}>
+        <ToggleButtonGroup
+          value={assetType}
+          exclusive
+          onChange={handleAssetTypeChange}
+          aria-label="Asset Type"
+          sx={{ mb: 1 }}
+        >
+          <ToggleButton value="stocks" aria-label="Stocks & ETFs">
+            Stocks & ETFs
+          </ToggleButton>
+          <ToggleButton value="indicators" aria-label="Indicators">
+            Indicators
+          </ToggleButton>
+        </ToggleButtonGroup>
+        <Typography variant="caption" display="block" color="text.secondary">
+          {assetType === 'indicators'
+            ? 'Volatility and sentiment indicators (VIX, VXN, PCR)'
+            : 'Individual stocks, ETFs, and market indices'}
+        </Typography>
+      </Box>
+
       <Box component="form" onSubmit={handleSubmit}>
         <Autocomplete
           freeSolo
-          options={suggestions}
+          options={filteredSuggestions}
           getOptionLabel={(option) => {
             if (typeof option === 'string') return option;
             return option.ticker;
@@ -164,7 +219,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
               {...params}
               fullWidth
               label="Ticker Symbol"
-              placeholder="e.g., NVDA, AVGO, SPY"
+              placeholder={assetType === 'indicators' ? "e.g., VIX, PCR, VXN" : "e.g., NVDA, AVGO, SPY"}
               sx={{ mb: 2 }}
               required
             />
