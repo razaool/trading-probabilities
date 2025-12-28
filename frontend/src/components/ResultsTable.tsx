@@ -48,7 +48,7 @@ export default function ResultsTable({ data }: ResultsTableProps) {
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 3 },
         mt: 2,
         background: 'rgba(255, 255, 255, 0.03)',
         backdropFilter: 'blur(10px)',
@@ -62,12 +62,12 @@ export default function ResultsTable({ data }: ResultsTableProps) {
       }}
     >
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
           Historical Occurrences
         </Typography>
       </Box>
 
-      <TableContainer>
+      <TableContainer sx={{ overflowX: 'auto' }}>
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -76,6 +76,8 @@ export default function ResultsTable({ data }: ResultsTableProps) {
                   borderBottom: '2px solid',
                   borderColor: 'divider',
                   fontWeight: 600,
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  padding: { xs: '6px 4px', sm: '16px' },
                 }}
               >
                 Date
@@ -88,6 +90,8 @@ export default function ResultsTable({ data }: ResultsTableProps) {
                     borderBottom: '2px solid',
                     borderColor: 'divider',
                     fontWeight: 600,
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    padding: { xs: '6px 4px', sm: '16px' },
                   }}
                 >
                   {horizon.toUpperCase()}
@@ -114,6 +118,8 @@ export default function ResultsTable({ data }: ResultsTableProps) {
                     fontWeight: 500,
                     borderBottom: '1px solid',
                     borderColor: 'divider',
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    padding: { xs: '6px 4px', sm: '16px' },
                   }}
                 >
                   {instance.date}
@@ -130,6 +136,8 @@ export default function ResultsTable({ data }: ResultsTableProps) {
                         color: isPositive ? '#2e7d32' : '#d32f2f',
                         borderBottom: '1px solid',
                         borderColor: 'divider',
+                        fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                        padding: { xs: '6px 4px', sm: '16px' },
                       }}
                     >
                       {formatPercentage(value)}
