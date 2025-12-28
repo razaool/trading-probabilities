@@ -122,6 +122,21 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
     setTicker(indicatorValue);
     // Force absolute threshold for indicators
     setConditionType('absolute_threshold');
+    // Reset direction to 'above' for indicators
+    setDirection('above');
+  };
+
+  // Handle condition type change - reset direction if switching to/from absolute threshold
+  const handleConditionTypeChange = (newConditionType: QueryRequest['condition_type']) => {
+    setConditionType(newConditionType);
+    // If switching to absolute_threshold, reset direction to 'above'
+    if (newConditionType === 'absolute_threshold' && direction === 'increase') {
+      setDirection('above');
+    }
+    // If switching to percentage_change and direction is 'above', reset to 'increase'
+    if (newConditionType === 'percentage_change' && direction === 'above') {
+      setDirection('increase');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -292,7 +307,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           <Select
             value={conditionType}
             label="Condition Type"
-            onChange={(e) => setConditionType(e.target.value as QueryRequest['condition_type'])}
+            onChange={(e) => handleConditionTypeChange(e.target.value as QueryRequest['condition_type'])}
             disabled={assetType === 'indicators'}
           >
             {CONDITION_TYPES.map((option) => (
@@ -310,13 +325,21 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <FormControl sx={{ flex: assetType === 'indicators' ? 1 : 1 }}>
-            <InputLabel>{assetType === 'indicators' ? 'Condition' : 'Direction'}</InputLabel>
+            <InputLabel>
+              {assetType === 'indicators' ? 'Condition' :
+               conditionType === 'absolute_threshold' ? 'Price Level' : 'Direction'}
+            </InputLabel>
             <Select
               value={direction}
-              label={assetType === 'indicators' ? 'Condition' : 'Direction'}
+              label={
+                assetType === 'indicators' ? 'Condition' :
+                conditionType === 'absolute_threshold' ? 'Price Level' : 'Direction'
+              }
               onChange={(e) => setDirection(e.target.value as 'increase' | 'decrease' | 'above' | 'below')}
             >
-              {(assetType === 'indicators' ? INDICATOR_DIRECTION_OPTIONS : DIRECTION_OPTIONS).map((option) => (
+              {(assetType === 'indicators' || conditionType === 'absolute_threshold'
+                ? INDICATOR_DIRECTION_OPTIONS
+                : DIRECTION_OPTIONS).map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
@@ -324,7 +347,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             </Select>
           </FormControl>
 
-          {assetType !== 'indicators' && (
+          {assetType !== 'indicators' && conditionType === 'percentage_change' && (
             <FormControl sx={{ flex: 1 }}>
               <InputLabel>Match Type</InputLabel>
               <Select
@@ -343,12 +366,21 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
 
           <TextField
             sx={{ flex: assetType === 'indicators' ? 1 : 1 }}
-            label={assetType === 'indicators' ? 'Threshold Value' : 'Percentage'}
+            label={
+              assetType === 'indicators' ? 'Threshold Value' :
+              conditionType === 'absolute_threshold' ? 'Price Level ($)' : 'Percentage'
+            }
             type="number"
             value={threshold}
             onChange={(e) => setThreshold(e.target.value)}
-            placeholder={assetType === 'indicators' ? "e.g., 30, 1.0, 0.8" : "e.g., 5, 10, 20"}
-            helperText={assetType === 'indicators' ? "Enter the indicator value (e.g., 30 for VIX)" : "Enter a positive number (e.g., 5 for 5%)"}
+            placeholder={
+              assetType === 'indicators' ? "e.g., 30, 1.0, 0.8" :
+              conditionType === 'absolute_threshold' ? "e.g., 500, 1000, 150" : "e.g., 5, 10, 20"
+            }
+            helperText={
+              assetType === 'indicators' ? "Enter the indicator value (e.g., 30 for VIX)" :
+              conditionType === 'absolute_threshold' ? "Enter the price level (e.g., 500 for $500)" : "Enter a positive number (e.g., 5 for 5%)"
+            }
             inputProps={{ step: "any", min: 0 }}
             required
           />
