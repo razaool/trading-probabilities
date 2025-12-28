@@ -5,6 +5,7 @@ import {
   Typography,
   CircularProgress,
   Chip,
+  useTheme,
 } from '@mui/material';
 import {
   LineChart,
@@ -28,6 +29,7 @@ interface PriceChartProps {
 }
 
 export default function PriceChart({ ticker }: PriceChartProps) {
+  const theme = useTheme();
   const [priceData, setPriceData] = useState<PriceDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,6 +120,11 @@ export default function PriceChart({ ticker }: PriceChartProps) {
   const minY = Math.min(...allPrices) * 0.98;
   const maxY = Math.max(...allPrices) * 1.02;
 
+  // Get theme-aware colors
+  const axisColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+  const gridColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const axisStroke = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
+
   return (
     <Paper
       elevation={0}
@@ -153,13 +160,13 @@ export default function PriceChart({ ticker }: PriceChartProps) {
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="rgba(255, 255, 255, 0.1)"
+            stroke={gridColor}
             vertical={false}
           />
           <XAxis
             dataKey="date"
-            tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 11 }}
-            stroke="rgba(255, 255, 255, 0.3)"
+            tick={{ fill: axisColor, fontSize: 11 }}
+            stroke={axisStroke}
             tickFormatter={(dateStr) => {
               const date = new Date(dateStr);
               return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
@@ -171,8 +178,8 @@ export default function PriceChart({ ticker }: PriceChartProps) {
           />
           <YAxis
             domain={[minY, maxY]}
-            tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 11 }}
-            stroke="rgba(255, 255, 255, 0.3)"
+            tick={{ fill: axisColor, fontSize: 11 }}
+            stroke={axisStroke}
             tickFormatter={formatPrice}
             width={60}
           />

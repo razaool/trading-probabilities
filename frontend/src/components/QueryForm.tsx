@@ -334,11 +334,6 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
                     transition: 'all 0.2s ease',
-                    '&:hover': {
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                    },
                     '&.Mui-focused': {
                       '& .MuiOutlinedInput-notchedOutline': {
                         borderWidth: 2,
@@ -367,6 +362,11 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                 '&:hover': {
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: 'primary.main',
+                  },
+                },
+                '&.Mui-focused': {
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderWidth: 2,
                   },
                 },
               },
@@ -403,6 +403,11 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                       borderColor: 'primary.main',
                     },
                   },
+                  '&.Mui-focused': {
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderWidth: 2,
+                    },
+                  },
                 },
               }}
             >
@@ -433,6 +438,11 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                         borderColor: 'primary.main',
                       },
                     },
+                    '&.Mui-focused': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: 2,
+                      },
+                    },
                   },
                 }}
               >
@@ -451,11 +461,6 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
                 transition: 'all 0.2s ease',
-                '&:hover': {
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main',
-                  },
-                },
                 '&.Mui-focused': {
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderWidth: 2,
@@ -497,6 +502,11 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
                     borderColor: 'primary.main',
                   },
                 },
+                '&.Mui-focused': {
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderWidth: 2,
+                  },
+                },
               },
             }}
           >
@@ -522,9 +532,11 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             textTransform: 'none',
             fontSize: '1rem',
             transition: 'all 0.2s ease',
+            background: 'linear-gradient(90deg, #646cff 0%, #747bff 25%, #a855f7 50%, #747bff 75%, #646cff 100%)',
             '&:hover': {
               transform: 'translateY(-2px)',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+              boxShadow: '0 8px 24px rgba(100, 108, 255, 0.3)',
+              background: 'linear-gradient(90deg, #646cff 0%, #747bff 25%, #a855f7 50%, #747bff 75%, #646cff 100%)',
             },
             '&:active': {
               transform: 'translateY(0)',

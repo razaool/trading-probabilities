@@ -28,14 +28,16 @@ export default function SlidingButtonGroup({
               p: 2,
               borderRadius: 2,
               border: 1,
-              borderColor: value === option.value ? 'primary.main' : 'divider',
-              bgcolor: value === option.value ? 'primary.main' : 'background.paper',
-              color: value === option.value ? 'primary.contrastText' : 'text.primary',
+              borderColor: value === option.value ? '#646cff' : 'divider',
+              background: value === option.value
+                ? 'linear-gradient(90deg, #646cff 0%, #747bff 25%, #a855f7 50%, #747bff 75%, #646cff 100%)'
+                : 'background.paper',
+              color: value === option.value ? '#fff' : 'text.primary',
               cursor: 'pointer',
               transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
               textAlign: 'left',
               '&:hover': {
-                borderColor: value === option.value ? 'primary.main' : 'primary.light',
+                borderColor: value === option.value ? '#646cff' : '#747bff',
                 transform: value === option.value ? 'none' : 'translateX(4px)',
               },
             }}
@@ -68,14 +70,16 @@ export default function SlidingButtonGroup({
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
             border: 1,
-            borderColor: value === option.value ? 'primary.main' : 'divider',
-            bgcolor: value === option.value ? 'primary.main' : 'background.paper',
-            color: value === option.value ? 'primary.contrastText' : 'text.primary',
+            borderColor: value === option.value ? '#646cff' : 'divider',
+            background: value === option.value
+              ? 'linear-gradient(90deg, #646cff 0%, #747bff 25%, #a855f7 50%, #747bff 75%, #646cff 100%)'
+              : 'background.paper',
+            color: value === option.value ? '#fff' : 'text.primary',
             cursor: 'pointer',
             transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
             textAlign: 'left',
             '&:hover': {
-              borderColor: value === option.value ? 'primary.main' : 'primary.light',
+              borderColor: value === option.value ? '#646cff' : '#747bff',
               transform: value === option.value ? 'none' : 'translateY(-2px)',
               boxShadow: value === option.value ? 0 : 2,
             },

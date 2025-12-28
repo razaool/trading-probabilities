@@ -72,7 +72,7 @@ export default function SlidingToggleGroup({ value, onChange, options }: Sliding
             left: position.left,
             width: position.width,
             height: 'calc(100% - 8px)',
-            bgcolor: 'primary.main',
+            background: 'linear-gradient(90deg, #646cff 0%, #747bff 25%, #a855f7 50%, #747bff 75%, #646cff 100%)',
             borderRadius: 1.5,
             transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
             zIndex: 0,
