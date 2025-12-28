@@ -67,19 +67,10 @@ export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
         },
       }}
     >
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Summary Statistics
         </Typography>
-        <Chip
-          label={`${data.total_occurrences} instances`}
-          size="small"
-          sx={{
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            fontWeight: 500,
-          }}
-        />
       </Box>
       <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontStyle: 'italic' }}>
         {data.condition}

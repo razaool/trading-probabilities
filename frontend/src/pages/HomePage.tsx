@@ -3,6 +3,7 @@ import { Container, Box, CircularProgress, Alert, AlertTitle } from '@mui/materi
 import QueryForm from '../components/QueryForm';
 import ResultsTable from '../components/ResultsTable';
 import SummaryStatistics from '../components/SummaryStatistics';
+import PriceChart from '../components/PriceChart';
 import GradientText from '../components/GradientText';
 import GlassSurface from '../components/GlassSurface';
 import FloatingLinesBackground from '../components/FloatingLinesBackground';
@@ -88,6 +89,12 @@ export default function HomePage() {
 
             {results && !loading && (
               <Box sx={{ width: '100%' }}>
+                <GlassSurface sx={{ mb: 2 }}>
+                  <PriceChart
+                    ticker={results.ticker}
+                    occurrenceDates={results.instances.map(i => i.date)}
+                  />
+                </GlassSurface>
                 <GlassSurface sx={{ mb: 2 }}>
                   <SummaryStatistics data={results} />
                 </GlassSurface>

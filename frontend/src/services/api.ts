@@ -31,6 +31,11 @@ export const apiService = {
     return response.data;
   },
 
+  async getHistoricalPrices(ticker: string): Promise<{ ticker: string; prices: Array<{ date: string; open: number; high: number; low: number; close: number; volume: number }> }> {
+    const response = await api.get(`/api/prices/${ticker}`);
+    return response.data;
+  },
+
   async healthCheck(): Promise<{ status: string }> {
     const response = await api.get('/health');
     return response.data;

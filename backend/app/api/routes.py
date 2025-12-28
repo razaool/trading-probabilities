@@ -79,3 +79,42 @@ async def get_etf_constituents(etf_ticker: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching constituents: {str(e)}")
+
+
+@router.get("/prices/{ticker}")
+async def get_historical_prices(
+    ticker: str,
+    start_date: str = QueryParam(None, description="Start date (YYYY-MM-DD)"),
+    end_date: str = QueryParam(None, description="End date (YYYY-MM-DD)")
+):
+    """
+    Get historical price data for a ticker
+
+    Returns daily price data for the specified date range.
+    If no dates provided, returns last 5 years of data.
+    """
+    from app.services.data_service import data_service
+    from datetime import datetime
+
+    try:
+        # Fetch historical data
+        data = await data_service.fetch_historical_data(ticker.upper(), period="20y")
+
+        # Convert to list of dicts for JSON response
+        prices = []
+        for date, row in data.iterrows():
+            prices.append({
+                "date": date.strftime("%Y-%m-%d"),
+                "open": float(row["Open"]),
+                "high": float(row["High"]),
+                "low": float(row["Low"]),
+                "close": float(row["Close"]),
+                "volume": int(row["Volume"])
+            })
+
+        return {
+            "ticker": ticker.upper(),
+            "prices": prices
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching prices: {str(e)}")

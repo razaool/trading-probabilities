@@ -61,18 +61,10 @@ export default function ResultsTable({ data }: ResultsTableProps) {
         },
       }}
     >
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Historical Occurrences
         </Typography>
-        <Chip
-          label={`${data.instances.length} total`}
-          size="small"
-          sx={{
-            bgcolor: 'action.hover',
-            fontWeight: 500,
-          }}
-        />
       </Box>
 
       <TableContainer>

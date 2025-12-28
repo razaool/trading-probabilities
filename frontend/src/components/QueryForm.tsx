@@ -250,22 +250,26 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
               Select Indicator
             </Typography>
-            <SlidingButtonGroup
-              value={ticker}
-              onChange={handleIndicatorSelect}
-              options={INDICATOR_OPTIONS}
-            />
+            <Box sx={{ mb: 2 }}>
+              <SlidingButtonGroup
+                value={ticker}
+                onChange={handleIndicatorSelect}
+                options={INDICATOR_OPTIONS}
+              />
+            </Box>
           </>
         ) : assetType === 'commodities' ? (
           <>
             <Typography variant="subtitle2" gutterBottom sx={{ mb: 1 }}>
               Select Commodity
             </Typography>
-            <SlidingButtonGroup
-              value={ticker}
-              onChange={handleCommoditySelect}
-              options={COMMODITY_OPTIONS}
-            />
+            <Box sx={{ mb: 2 }}>
+              <SlidingButtonGroup
+                value={ticker}
+                onChange={handleCommoditySelect}
+                options={COMMODITY_OPTIONS}
+              />
+            </Box>
           </>
         ) : assetType === 'sectors' ? (
           <>
@@ -374,11 +378,6 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
               </MenuItem>
             ))}
           </Select>
-          {assetType === 'indicators' && (
-            <Typography variant="caption" color="text.secondary">
-              Indicators always use absolute threshold values
-            </Typography>
-          )}
         </FormControl>
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
