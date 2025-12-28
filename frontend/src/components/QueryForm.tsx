@@ -46,6 +46,11 @@ const DIRECTION_OPTIONS = [
   { value: 'decrease', label: 'Price Decreased (Dropped)' },
 ];
 
+const INDICATOR_DIRECTION_OPTIONS = [
+  { value: 'above', label: 'Exceeded (Above)' },
+  { value: 'below', label: 'Dropped Below' },
+];
+
 const OPERATOR_OPTIONS = [
   { value: 'gte', label: 'At Least (≥)' },  // Greater or equal - matches threshold AND beyond
   { value: 'eq', label: 'Exact Match (≈)' },  // Exact - matches within ±0.5%
@@ -64,7 +69,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   const [suggestions, setSuggestions] = useState<TickerSuggestion[]>([]);
   const [conditionType, setConditionType] = useState<QueryRequest['condition_type']>('percentage_change');
   const [threshold, setThreshold] = useState('');
-  const [direction, setDirection] = useState<'increase' | 'decrease'>('increase');
+  const [direction, setDirection] = useState<'increase' | 'decrease' | 'above' | 'below'>('increase');
   const [operator, setOperator] = useState<QueryRequest['operator']>('gte');
   const [timeHorizons, setTimeHorizons] = useState<QueryRequest['time_horizons']>(['1d', '1w', '1m', '1y']);
   const [assetType, setAssetType] = useState<'stocks' | 'indicators'>('stocks');
@@ -108,12 +113,16 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
       setAssetType(newAssetType);
       setTicker('');
       setSuggestions([]);
+      // Reset direction to appropriate default for the asset type
+      setDirection(newAssetType === 'indicators' ? 'above' : 'increase');
     }
   };
 
   // Handle indicator button click
   const handleIndicatorSelect = (indicatorValue: string) => {
     setTicker(indicatorValue);
+    // Force absolute threshold for indicators
+    setConditionType('absolute_threshold');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,11 +138,11 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
     let finalOperator: QueryRequest['operator'];
     let finalThreshold: number;
 
-    if (direction === 'increase') {
-      // Price increased
+    if (direction === 'increase' || direction === 'above') {
+      // Price increased or indicator exceeded threshold
       finalOperator = operator;
       finalThreshold = thresholdValue;
-    } else {
+    } else if (direction === 'decrease') {
       // Price decreased: invert operator and make threshold negative
       if (operator === 'gt') {
         finalOperator = 'lt'; // Decrease "more than" = less than negative
@@ -143,6 +152,17 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
         finalOperator = 'eq'; // Exact match stays the same
       }
       finalThreshold = -thresholdValue; // Convert positive input to negative
+    } else {
+      // direction === 'below' - indicator dropped below threshold
+      // For indicators, we use absolute_threshold, so "below" means less than
+      if (operator === 'gt') {
+        finalOperator = 'lt'; // Below "more than" = less than threshold
+      } else if (operator === 'gte') {
+        finalOperator = 'lte'; // Below "at least" = less than or equal threshold
+      } else {
+        finalOperator = 'eq'; // Exact match stays the same
+      }
+      finalThreshold = thresholdValue; // Keep positive for indicators
     }
 
     onSubmit({
@@ -284,6 +304,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
             value={conditionType}
             label="Condition Type"
             onChange={(e) => setConditionType(e.target.value as QueryRequest['condition_type'])}
+            disabled={assetType === 'indicators'}
           >
             {CONDITION_TYPES.map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -291,17 +312,22 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
               </MenuItem>
             ))}
           </Select>
+          {assetType === 'indicators' && (
+            <Typography variant="caption" color="text.secondary">
+              Indicators always use absolute threshold values
+            </Typography>
+          )}
         </FormControl>
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <FormControl sx={{ flex: 1 }}>
-            <InputLabel>Direction</InputLabel>
+            <InputLabel>{assetType === 'indicators' ? 'Condition' : 'Direction'}</InputLabel>
             <Select
               value={direction}
-              label="Direction"
-              onChange={(e) => setDirection(e.target.value as 'increase' | 'decrease')}
+              label={assetType === 'indicators' ? 'Condition' : 'Direction'}
+              onChange={(e) => setDirection(e.target.value as 'increase' | 'decrease' | 'above' | 'below')}
             >
-              {DIRECTION_OPTIONS.map((option) => (
+              {(assetType === 'indicators' ? INDICATOR_DIRECTION_OPTIONS : DIRECTION_OPTIONS).map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
@@ -326,12 +352,12 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
 
           <TextField
             sx={{ flex: 1 }}
-            label="Percentage"
+            label={assetType === 'indicators' ? 'Threshold Value' : 'Percentage'}
             type="number"
             value={threshold}
             onChange={(e) => setThreshold(e.target.value)}
-            placeholder="e.g., 5, 10, 20"
-            helperText="Enter a positive number (e.g., 5 for 5%)"
+            placeholder={assetType === 'indicators' ? "e.g., 30, 1.0, 0.8" : "e.g., 5, 10, 20"}
+            helperText={assetType === 'indicators' ? "Enter the indicator value (e.g., 30 for VIX)" : "Enter a positive number (e.g., 5 for 5%)"}
             inputProps={{ step: "any", min: 0 }}
             required
           />
