@@ -39,7 +39,10 @@ function getColorForValue(value: number | null | undefined, isWinRate: boolean =
 }
 
 export default function SummaryStatistics({ data }: SummaryStatisticsProps) {
-  const horizons = Object.keys(data.summary_statistics).sort();
+  // Define the correct chronological order for timeframes
+  const horizonOrder = ['1d', '1w', '1m', '1y'];
+  const horizons = horizonOrder.filter(h => h in data.summary_statistics);
+
   const horizonLabels: Record<string, string> = {
     '1d': '+1D',
     '1w': '+1W',
