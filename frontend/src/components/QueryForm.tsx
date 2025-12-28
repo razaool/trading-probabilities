@@ -32,6 +32,12 @@ const DIRECTION_OPTIONS = [
   { value: 'decrease', label: 'Price Decreased (Dropped)' },
 ];
 
+const OPERATOR_OPTIONS = [
+  { value: 'gte', label: 'At Least (≥)' },  // Greater or equal - matches threshold AND beyond
+  { value: 'eq', label: 'Exact Match (≈)' },  // Exact - matches within ±0.5%
+  { value: 'gt', label: 'More Than (>)' },  // Greater than - matches beyond threshold only
+];
+
 const TIME_HORIZONS = [
   { value: '1d', label: '1 Day' },
   { value: '1w', label: '1 Week' },
@@ -45,6 +51,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
   const [conditionType, setConditionType] = useState<QueryRequest['condition_type']>('percentage_change');
   const [threshold, setThreshold] = useState('');
   const [direction, setDirection] = useState<'increase' | 'decrease'>('increase');
+  const [operator, setOperator] = useState<QueryRequest['operator']>('gte');
   const [timeHorizons, setTimeHorizons] = useState<QueryRequest['time_horizons']>(['1d', '1w', '1m', '1y']);
 
   // Fetch suggestions when ticker changes
@@ -75,16 +82,22 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
     const thresholdValue = parseFloat(threshold);
 
     // Convert direction to operator and apply sign
-    let operator: QueryRequest['operator'];
+    let finalOperator: QueryRequest['operator'];
     let finalThreshold: number;
 
     if (direction === 'increase') {
-      // Price increased: looking for positive changes greater than threshold
-      operator = 'gt';
+      // Price increased
+      finalOperator = operator;
       finalThreshold = thresholdValue;
     } else {
-      // Price decreased: looking for negative changes less than negative threshold
-      operator = 'lt';
+      // Price decreased: invert operator and make threshold negative
+      if (operator === 'gt') {
+        finalOperator = 'lt'; // Decrease "more than" = less than negative
+      } else if (operator === 'gte') {
+        finalOperator = 'lte'; // Decrease "at least" = less than or equal negative
+      } else {
+        finalOperator = 'eq'; // Exact match stays the same
+      }
       finalThreshold = -thresholdValue; // Convert positive input to negative
     }
 
@@ -92,7 +105,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
       ticker: ticker.toUpperCase(),
       condition_type: conditionType,
       threshold: finalThreshold,
-      operator,
+      operator: finalOperator,
       time_horizons: timeHorizons,
     });
   };
@@ -182,6 +195,21 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
               onChange={(e) => setDirection(e.target.value as 'increase' | 'decrease')}
             >
               {DIRECTION_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{ flex: 1 }}>
+            <InputLabel>Match Type</InputLabel>
+            <Select
+              value={operator}
+              label="Match Type"
+              onChange={(e) => setOperator(e.target.value as QueryRequest['operator'])}
+            >
+              {OPERATOR_OPTIONS.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>

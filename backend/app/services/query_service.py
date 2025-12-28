@@ -99,7 +99,9 @@ class QueryService:
             elif query.operator == "lte":
                 mask = pct_changes <= query.threshold
             elif query.operator == "eq":
-                mask = pct_changes == query.threshold
+                # Use a tolerance of ±0.5% for exact matches to handle floating point precision
+                tolerance = 0.5
+                mask = abs(pct_changes - query.threshold) <= tolerance
             else:
                 raise ValueError(f"Unknown operator: {query.operator}")
         elif query.condition_type == "absolute_threshold":
