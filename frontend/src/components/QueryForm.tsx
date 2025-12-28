@@ -512,7 +512,7 @@ export default function QueryForm({ onSubmit, loading }: QueryFormProps) {
           >
             {TIME_HORIZONS.map((horizon) => (
               <MenuItem key={horizon.value} value={horizon.value}>
-                <Checkbox checked={timeHorizons.indexOf(horizon.value as '1d' | '1w' | '1m' | '1y') > -1} />
+                <Checkbox checked={(timeHorizons || []).indexOf(horizon.value as '1d' | '1w' | '1m' | '1y') > -1} />
                 <ListItemText primary={horizon.label} />
               </MenuItem>
             ))}
