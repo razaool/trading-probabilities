@@ -41,7 +41,20 @@
       "Bash(ip:*)",
       "Bash(git reset:*)",
       "Bash(kill:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(/Users/razaool/trading-probabilities/venv/bin/pip list:*)",
+      "Bash(/Users/razaool/trading-probabilities/venv/bin python:*)",
+      "Bash(PYTHONPATH=\"$PYTHONPATH:/Users/razaool/trading-probabilities/backend\" /Users/razaool/trading-probabilities/venv/bin/python:*)",
+      "Bash(PYTHONPATH=\"$PYTHONPATH:/Users/razaool/trading-probabilities/backend\" DATABASE_URL=\"postgresql://user:pass@host/db\" /Users/razaool/trading-probabilities/venv/bin/python:*)",
+      "Bash(grep:*)",
+      "Bash(timeout:*)",
+      "Bash(PYTHONPATH=\"$PYTHONPATH:/Users/razaool/trading-probabilities/backend\" DATABASE_URL=\"postgresql://postgres:REDACTED@containers-us-west-XXX.railway.app:XXXX/railway\" /Users/razaool/trading-probabilities/venv/bin/python:*)",
+      "Bash(railway status:*)",
+      "Bash(railway login:*)",
+      "Bash(railway variables:*)",
+      "Bash(railway run --:*)",
+      "Bash(railway logs:*)",
+      "Bash(railway services:*)"
     ]
   }
 }

@@ -317,7 +317,8 @@ class DataService:
                                 data_available = EXCLUDED.data_available,
                                 earliest_date = EXCLUDED.earliest_date,
                                 latest_date = EXCLUDED.latest_date,
-                                last_updated = EXCLUDED.last_updated
+                                last_updated = EXCLUDED.last_updated,
+                                exchange = EXCLUDED.exchange
                         """),
                         (
                             ticker,

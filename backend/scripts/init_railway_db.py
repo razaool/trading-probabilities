@@ -26,12 +26,22 @@ def init_tables():
     print(f"\nConnecting to: {settings.DATABASE_URL.split('@')[1] if '@' in settings.DATABASE_URL else 'Railway'}")
 
     with engine.connect() as conn:
-        # Create tickers table
+        # Check if tickers table exists and needs migration
+        print("\nChecking tickers table...")
+        try:
+            # Try to add exchange column if it doesn't exist
+            conn.execute(text("ALTER TABLE tickers ADD COLUMN IF NOT EXISTS exchange VARCHAR(50)"))
+            print("✅ tickers table updated (added exchange column)")
+        except Exception as e:
+            print(f"Note: {e}")
+
+        # Create tickers table if it doesn't exist
         print("\nCreating tickers table...")
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS tickers (
                 symbol VARCHAR(10) PRIMARY KEY,
                 name VARCHAR(255),
+                exchange VARCHAR(50),
                 type VARCHAR(20),
                 data_available BOOLEAN DEFAULT TRUE,
                 earliest_date DATE,
@@ -39,7 +49,7 @@ def init_tables():
                 last_updated DATE
             )
         """))
-        print("✅ tickers table created")
+        print("✅ tickers table ready")
 
         # Create historical_prices table
         print("\nCreating historical_prices table...")
