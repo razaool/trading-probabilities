@@ -405,14 +405,13 @@ class ConstituentsService:
             from app.database.models import SessionLocal, Ticker
             db = SessionLocal()
             try:
-                # Get all tickers from database
+                # Get all tickers from database - extract symbol strings from Row objects
                 db_tickers = db.query(Ticker.symbol).all()
-                # Extract symbols from result tuples
                 for ticker_row in db_tickers:
-                    if isinstance(ticker_row, tuple):
-                        all_tickers.add(ticker_row[0])
-                    else:
-                        all_tickers.add(ticker_row)
+                    # ticker_row is a SQLAlchemy Row object like ('SPY',)
+                    # Access via index [0] to get the string value
+                    symbol = ticker_row[0]
+                    all_tickers.add(symbol)
                 print(f"DEBUG: Loaded {len(all_tickers)} tickers from database")
             finally:
                 db.close()
@@ -428,11 +427,17 @@ class ConstituentsService:
         # Filter by query - check both ticker and company name
         matches = []
         for ticker in sorted(all_tickers):
-            company_name = self.ticker_names.get(ticker, ticker)
-            if query in ticker or query.upper() in company_name.upper():
+            # Ensure ticker is a string
+            ticker_str = str(ticker) if not isinstance(ticker, str) else ticker
+            company_name = self.ticker_names.get(ticker_str, ticker_str)
+
+            # Ensure company_name is a string before calling .upper()
+            company_name_str = str(company_name) if not isinstance(company_name, str) else company_name
+
+            if query in ticker_str or query.upper() in company_name_str.upper():
                 matches.append({
-                    "ticker": ticker,
-                    "name": company_name
+                    "ticker": ticker_str,
+                    "name": company_name_str
                 })
 
         return matches[:20]  # Limit to 20 results
