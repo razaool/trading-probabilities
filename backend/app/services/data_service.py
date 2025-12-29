@@ -157,10 +157,10 @@ class DataService:
                 query = """
                     SELECT date, open, high, low, close, volume, adjusted_close
                     FROM historical_prices
-                    WHERE ticker = :ticker
+                    WHERE ticker = %s
                     ORDER BY date
                 """
-                df = pd.read_sql(query, self.db_engine, params={"ticker": ticker})
+                df = pd.read_sql(query, self.db_engine, params=(ticker,))
             else:
                 query = """
                     SELECT date, open, high, low, close, volume, adjusted_close
@@ -221,13 +221,17 @@ class DataService:
                 # Insert price data using direct column access
                 for idx in range(len(data)):
                     date = data.index[idx]
+                    volume_val = data['Volume'].iloc[idx]
+                    # Handle large volume values - use None if too large or NaN
+                    volume_int = None if pd.isna(volume_val) or volume_val > 2147483647 else int(volume_val)
+
                     if is_postgresql:
                         # PostgreSQL uses ON CONFLICT instead of INSERT OR REPLACE
                         conn.execute(
                             text("""
                                 INSERT INTO historical_prices
                                 (ticker, date, open, high, low, close, volume, adjusted_close)
-                                VALUES (:ticker, :date, :open, :high, :low, :close, :volume, :adj_close)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                                 ON CONFLICT (ticker, date) DO UPDATE SET
                                     open = EXCLUDED.open,
                                     high = EXCLUDED.high,
@@ -236,16 +240,16 @@ class DataService:
                                     volume = EXCLUDED.volume,
                                     adjusted_close = EXCLUDED.adjusted_close
                             """),
-                            {
-                                'ticker': ticker,
-                                'date': date.strftime('%Y-%m-%d'),
-                                'open': float(data['Open'].iloc[idx]),
-                                'high': float(data['High'].iloc[idx]),
-                                'low': float(data['Low'].iloc[idx]),
-                                'close': float(data['Close'].iloc[idx]),
-                                'volume': int(data['Volume'].iloc[idx]),
-                                'adj_close': float(data[adj_close_col].iloc[idx])
-                            }
+                            (
+                                ticker,
+                                date.strftime('%Y-%m-%d'),
+                                float(data['Open'].iloc[idx]),
+                                float(data['High'].iloc[idx]),
+                                float(data['Low'].iloc[idx]),
+                                float(data['Close'].iloc[idx]),
+                                volume_int,
+                                float(data[adj_close_col].iloc[idx])
+                            )
                         )
                     else:
                         # SQLite uses INSERT OR REPLACE
@@ -253,18 +257,18 @@ class DataService:
                             text("""
                                 INSERT OR REPLACE INTO historical_prices
                                 (ticker, date, open, high, low, close, volume, adjusted_close)
-                                VALUES (:ticker, :date, :open, :high, :low, :close, :volume, :adj_close)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                             """),
-                            {
-                                'ticker': ticker,
-                                'date': date.strftime('%Y-%m-%d'),
-                                'open': float(data['Open'].iloc[idx]),
-                                'high': float(data['High'].iloc[idx]),
-                                'low': float(data['Low'].iloc[idx]),
-                                'close': float(data['Close'].iloc[idx]),
-                                'volume': int(data['Volume'].iloc[idx]),
-                                'adj_close': float(data[adj_close_col].iloc[idx])
-                            }
+                            (
+                                ticker,
+                                date.strftime('%Y-%m-%d'),
+                                float(data['Open'].iloc[idx]),
+                                float(data['High'].iloc[idx]),
+                                float(data['Low'].iloc[idx]),
+                                float(data['Close'].iloc[idx]),
+                                volume_int,
+                                float(data[adj_close_col].iloc[idx])
+                            )
                         )
 
                 # Insert daily returns
@@ -277,27 +281,27 @@ class DataService:
                             conn.execute(
                                 text("""
                                     INSERT INTO daily_returns (ticker, date, return_pct)
-                                    VALUES (:ticker, :date, :return_pct)
+                                    VALUES (%s, %s, %s)
                                     ON CONFLICT (ticker, date) DO UPDATE SET
                                         return_pct = EXCLUDED.return_pct
                                 """),
-                                {
-                                    'ticker': ticker,
-                                    'date': data_copy.index[idx].strftime('%Y-%m-%d'),
-                                    'return_pct': float(daily_ret)
-                                }
+                                (
+                                    ticker,
+                                    data_copy.index[idx].strftime('%Y-%m-%d'),
+                                    float(daily_ret)
+                                )
                             )
                         else:
                             conn.execute(
                                 text("""
                                     INSERT OR REPLACE INTO daily_returns (ticker, date, return_pct)
-                                    VALUES (:ticker, :date, :return_pct)
+                                    VALUES (?, ?, ?)
                                 """),
-                                {
-                                    'ticker': ticker,
-                                    'date': data_copy.index[idx].strftime('%Y-%m-%d'),
-                                    'return_pct': float(daily_ret)
-                                }
+                                (
+                                    ticker,
+                                    data_copy.index[idx].strftime('%Y-%m-%d'),
+                                    float(daily_ret)
+                                )
                             )
 
                 # Update ticker metadata
@@ -306,7 +310,7 @@ class DataService:
                         text("""
                             INSERT INTO tickers
                             (symbol, name, type, data_available, earliest_date, latest_date, last_updated)
-                            VALUES (:symbol, :name, :type, :data_available, :earliest_date, :latest_date, :last_updated)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
                             ON CONFLICT (symbol) DO UPDATE SET
                                 name = EXCLUDED.name,
                                 type = EXCLUDED.type,
@@ -315,32 +319,32 @@ class DataService:
                                 latest_date = EXCLUDED.latest_date,
                                 last_updated = EXCLUDED.last_updated
                         """),
-                        {
-                            'symbol': ticker,
-                            'name': ticker,
-                            'type': 'stock',
-                            'data_available': True,
-                            'earliest_date': data.index[0].strftime('%Y-%m-%d'),
-                            'latest_date': data.index[-1].strftime('%Y-%m-%d'),
-                            'last_updated': datetime.now().strftime('%Y-%m-%d')
-                        }
+                        (
+                            ticker,
+                            ticker,
+                            'stock',
+                            True,
+                            data.index[0].strftime('%Y-%m-%d'),
+                            data.index[-1].strftime('%Y-%m-%d'),
+                            datetime.now().strftime('%Y-%m-%d')
+                        )
                     )
                 else:
                     conn.execute(
                         text("""
                             INSERT OR REPLACE INTO tickers
                             (symbol, name, type, data_available, earliest_date, latest_date, last_updated)
-                            VALUES (:symbol, :name, :type, :data_available, :earliest_date, :latest_date, :last_updated)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
                         """),
-                        {
-                            'symbol': ticker,
-                            'name': ticker,
-                            'type': 'stock',
-                            'data_available': True,
-                            'earliest_date': data.index[0].strftime('%Y-%m-%d'),
-                            'latest_date': data.index[-1].strftime('%Y-%m-%d'),
-                            'last_updated': datetime.now().strftime('%Y-%m-%d')
-                        }
+                        (
+                            ticker,
+                            ticker,
+                            'stock',
+                            True,
+                            data.index[0].strftime('%Y-%m-%d'),
+                            data.index[-1].strftime('%Y-%m-%d'),
+                            datetime.now().strftime('%Y-%m-%d')
+                        )
                     )
 
                 # Commit the transaction
