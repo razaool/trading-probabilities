@@ -407,11 +407,19 @@ class ConstituentsService:
             try:
                 # Get all tickers from database
                 db_tickers = db.query(Ticker.symbol).all()
-                all_tickers.update([t[0] for t in db_tickers])
+                # Extract symbols from result tuples
+                for ticker_row in db_tickers:
+                    if isinstance(ticker_row, tuple):
+                        all_tickers.add(ticker_row[0])
+                    else:
+                        all_tickers.add(ticker_row)
+                print(f"DEBUG: Loaded {len(all_tickers)} tickers from database")
             finally:
                 db.close()
         except Exception as e:
             print(f"Warning: Could not load tickers from database: {e}")
+            import traceback
+            traceback.print_exc()
 
         # If database is empty or query returned no results, use hardcoded ticker names
         if not all_tickers:
