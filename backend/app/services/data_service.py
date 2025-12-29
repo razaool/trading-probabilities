@@ -139,7 +139,7 @@ class DataService:
 
     def _get_from_database(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Load ticker data from SQLite database
+        Load ticker data from database (SQLite or PostgreSQL)
 
         Args:
             ticker: Ticker symbol
@@ -148,14 +148,27 @@ class DataService:
             DataFrame with OHLCV data or None if not found
         """
         try:
+            # Detect database type from URL
+            is_postgresql = settings.DATABASE_URL.startswith("postgresql")
+
             # Query historical prices from database
-            query = """
-                SELECT date, open, high, low, close, volume, adjusted_close
-                FROM historical_prices
-                WHERE ticker = ?
-                ORDER BY date
-            """
-            df = pd.read_sql(query, self.db_engine, params=(ticker,))
+            # Use different parameter syntax for PostgreSQL vs SQLite
+            if is_postgresql:
+                query = """
+                    SELECT date, open, high, low, close, volume, adjusted_close
+                    FROM historical_prices
+                    WHERE ticker = :ticker
+                    ORDER BY date
+                """
+                df = pd.read_sql(query, self.db_engine, params={"ticker": ticker})
+            else:
+                query = """
+                    SELECT date, open, high, low, close, volume, adjusted_close
+                    FROM historical_prices
+                    WHERE ticker = ?
+                    ORDER BY date
+                """
+                df = pd.read_sql(query, self.db_engine, params=(ticker,))
 
             if df.empty:
                 return None
@@ -183,7 +196,7 @@ class DataService:
 
     def _save_to_database(self, ticker: str, data: pd.DataFrame) -> bool:
         """
-        Save ticker data to SQLite database
+        Save ticker data to database (SQLite or PostgreSQL)
 
         Args:
             ticker: Ticker symbol
@@ -193,6 +206,9 @@ class DataService:
             True if successful, False otherwise
         """
         try:
+            # Detect database type from URL
+            is_postgresql = settings.DATABASE_URL.startswith("postgresql")
+
             # Calculate daily returns
             data_copy = data.copy()
             data_copy['daily_return'] = data_copy['Close'].pct_change() * 100
@@ -205,23 +221,51 @@ class DataService:
                 # Insert price data using direct column access
                 for idx in range(len(data)):
                     date = data.index[idx]
-                    conn.execute(
-                        text("""
-                            INSERT OR REPLACE INTO historical_prices
-                            (ticker, date, open, high, low, close, volume, adjusted_close)
-                            VALUES (:ticker, :date, :open, :high, :low, :close, :volume, :adj_close)
-                        """),
-                        {
-                            'ticker': ticker,
-                            'date': date.strftime('%Y-%m-%d'),
-                            'open': float(data['Open'].iloc[idx]),
-                            'high': float(data['High'].iloc[idx]),
-                            'low': float(data['Low'].iloc[idx]),
-                            'close': float(data['Close'].iloc[idx]),
-                            'volume': int(data['Volume'].iloc[idx]),
-                            'adj_close': float(data[adj_close_col].iloc[idx])
-                        }
-                    )
+                    if is_postgresql:
+                        # PostgreSQL uses ON CONFLICT instead of INSERT OR REPLACE
+                        conn.execute(
+                            text("""
+                                INSERT INTO historical_prices
+                                (ticker, date, open, high, low, close, volume, adjusted_close)
+                                VALUES (:ticker, :date, :open, :high, :low, :close, :volume, :adj_close)
+                                ON CONFLICT (ticker, date) DO UPDATE SET
+                                    open = EXCLUDED.open,
+                                    high = EXCLUDED.high,
+                                    low = EXCLUDED.low,
+                                    close = EXCLUDED.close,
+                                    volume = EXCLUDED.volume,
+                                    adjusted_close = EXCLUDED.adjusted_close
+                            """),
+                            {
+                                'ticker': ticker,
+                                'date': date.strftime('%Y-%m-%d'),
+                                'open': float(data['Open'].iloc[idx]),
+                                'high': float(data['High'].iloc[idx]),
+                                'low': float(data['Low'].iloc[idx]),
+                                'close': float(data['Close'].iloc[idx]),
+                                'volume': int(data['Volume'].iloc[idx]),
+                                'adj_close': float(data[adj_close_col].iloc[idx])
+                            }
+                        )
+                    else:
+                        # SQLite uses INSERT OR REPLACE
+                        conn.execute(
+                            text("""
+                                INSERT OR REPLACE INTO historical_prices
+                                (ticker, date, open, high, low, close, volume, adjusted_close)
+                                VALUES (:ticker, :date, :open, :high, :low, :close, :volume, :adj_close)
+                            """),
+                            {
+                                'ticker': ticker,
+                                'date': date.strftime('%Y-%m-%d'),
+                                'open': float(data['Open'].iloc[idx]),
+                                'high': float(data['High'].iloc[idx]),
+                                'low': float(data['Low'].iloc[idx]),
+                                'close': float(data['Close'].iloc[idx]),
+                                'volume': int(data['Volume'].iloc[idx]),
+                                'adj_close': float(data[adj_close_col].iloc[idx])
+                            }
+                        )
 
                 # Insert daily returns
                 for idx in range(len(data_copy)):
@@ -229,35 +273,75 @@ class DataService:
                     # Check if not NaN using numpy's isnan which handles scalars properly
                     import numpy as np
                     if not isinstance(daily_ret, float) or not np.isnan(daily_ret):
-                        conn.execute(
-                            text("""
-                                INSERT OR REPLACE INTO daily_returns (ticker, date, return_pct)
-                                VALUES (:ticker, :date, :return_pct)
-                            """),
-                            {
-                                'ticker': ticker,
-                                'date': data_copy.index[idx].strftime('%Y-%m-%d'),
-                                'return_pct': float(daily_ret)
-                            }
-                        )
+                        if is_postgresql:
+                            conn.execute(
+                                text("""
+                                    INSERT INTO daily_returns (ticker, date, return_pct)
+                                    VALUES (:ticker, :date, :return_pct)
+                                    ON CONFLICT (ticker, date) DO UPDATE SET
+                                        return_pct = EXCLUDED.return_pct
+                                """),
+                                {
+                                    'ticker': ticker,
+                                    'date': data_copy.index[idx].strftime('%Y-%m-%d'),
+                                    'return_pct': float(daily_ret)
+                                }
+                            )
+                        else:
+                            conn.execute(
+                                text("""
+                                    INSERT OR REPLACE INTO daily_returns (ticker, date, return_pct)
+                                    VALUES (:ticker, :date, :return_pct)
+                                """),
+                                {
+                                    'ticker': ticker,
+                                    'date': data_copy.index[idx].strftime('%Y-%m-%d'),
+                                    'return_pct': float(daily_ret)
+                                }
+                            )
 
                 # Update ticker metadata
-                conn.execute(
-                    text("""
-                        INSERT OR REPLACE INTO tickers
-                        (symbol, name, type, data_available, earliest_date, latest_date, last_updated)
-                        VALUES (:symbol, :name, :type, :data_available, :earliest_date, :latest_date, :last_updated)
-                    """),
-                    {
-                        'symbol': ticker,
-                        'name': ticker,
-                        'type': 'stock',
-                        'data_available': True,
-                        'earliest_date': data.index[0].strftime('%Y-%m-%d'),
-                        'latest_date': data.index[-1].strftime('%Y-%m-%d'),
-                        'last_updated': datetime.now().strftime('%Y-%m-%d')
-                    }
-                )
+                if is_postgresql:
+                    conn.execute(
+                        text("""
+                            INSERT INTO tickers
+                            (symbol, name, type, data_available, earliest_date, latest_date, last_updated)
+                            VALUES (:symbol, :name, :type, :data_available, :earliest_date, :latest_date, :last_updated)
+                            ON CONFLICT (symbol) DO UPDATE SET
+                                name = EXCLUDED.name,
+                                type = EXCLUDED.type,
+                                data_available = EXCLUDED.data_available,
+                                earliest_date = EXCLUDED.earliest_date,
+                                latest_date = EXCLUDED.latest_date,
+                                last_updated = EXCLUDED.last_updated
+                        """),
+                        {
+                            'symbol': ticker,
+                            'name': ticker,
+                            'type': 'stock',
+                            'data_available': True,
+                            'earliest_date': data.index[0].strftime('%Y-%m-%d'),
+                            'latest_date': data.index[-1].strftime('%Y-%m-%d'),
+                            'last_updated': datetime.now().strftime('%Y-%m-%d')
+                        }
+                    )
+                else:
+                    conn.execute(
+                        text("""
+                            INSERT OR REPLACE INTO tickers
+                            (symbol, name, type, data_available, earliest_date, latest_date, last_updated)
+                            VALUES (:symbol, :name, :type, :data_available, :earliest_date, :latest_date, :last_updated)
+                        """),
+                        {
+                            'symbol': ticker,
+                            'name': ticker,
+                            'type': 'stock',
+                            'data_available': True,
+                            'earliest_date': data.index[0].strftime('%Y-%m-%d'),
+                            'latest_date': data.index[-1].strftime('%Y-%m-%d'),
+                            'last_updated': datetime.now().strftime('%Y-%m-%d')
+                        }
+                    )
 
                 # Commit the transaction
                 conn.commit()
