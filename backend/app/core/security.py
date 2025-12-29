@@ -2,7 +2,7 @@
 Authentication and security utilities
 """
 
-from fastapi import Security, HTTPException, status
+from fastapi import Security, HTTPException, status, Request
 from fastapi.security import APIKeyHeader
 from typing import Optional
 from app.core.config import settings
@@ -10,16 +10,21 @@ from app.core.config import settings
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
-async def verify_api_key(api_key: Optional[str] = Security(API_KEY_HEADER)) -> None:
+async def verify_api_key(request: Request, api_key: Optional[str] = Security(API_KEY_HEADER)) -> None:
     """
     Verify API key if authentication is required.
 
     Args:
+        request: FastAPI Request object
         api_key: API key from X-API-Key header
 
     Raises:
         HTTPException: If authentication is required and key is invalid/missing
     """
+    # Skip auth for OPTIONS preflight requests
+    if request.method == "OPTIONS":
+        return
+
     # If auth is not required, allow all requests
     if not settings.REQUIRE_AUTH:
         return
