@@ -12,6 +12,7 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.core.rate_limit import limiter
+from app.database.models import init_db
 import logging
 
 # Set up logging
@@ -23,6 +24,14 @@ app = FastAPI(
     description="Query historical market data and analyze forward returns",
     version="0.1.0",
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on startup"""
+    logger.info("Initializing database...")
+    init_db()
+    logger.info("Database initialized successfully")
 
 # Add rate limiting error handler
 app.state.limiter = limiter
