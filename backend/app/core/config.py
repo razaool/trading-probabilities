@@ -23,7 +23,11 @@ class Settings(BaseSettings):
         "http://localhost:5174",
         "http://192.168.1.66:5173",
         "http://192.168.1.66:5174",
+        "https://trading-probabilities.vercel.app",  # Production Vercel URL
     ]
+
+    # Allow all origins for development/previews (set via environment variable)
+    CORS_ALLOW_ALL: bool = False
 
     # Database
     DATABASE_URL: str = "sqlite:///./data/trading_patterns.db"
