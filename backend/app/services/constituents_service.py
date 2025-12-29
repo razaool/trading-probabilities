@@ -398,15 +398,24 @@ class ConstituentsService:
         """
         query = query.upper()
 
-        # Get tickers from database
-        from app.database.models import SessionLocal, Ticker
-        db = SessionLocal()
+        all_tickers = set()
+
+        # Get tickers from database (if available)
         try:
-            # Get all tickers from database
-            db_tickers = db.query(Ticker.symbol).all()
-            all_tickers = set([t[0] for t in db_tickers])
-        finally:
-            db.close()
+            from app.database.models import SessionLocal, Ticker
+            db = SessionLocal()
+            try:
+                # Get all tickers from database
+                db_tickers = db.query(Ticker.symbol).all()
+                all_tickers.update([t[0] for t in db_tickers])
+            finally:
+                db.close()
+        except Exception as e:
+            print(f"Warning: Could not load tickers from database: {e}")
+
+        # If database is empty or query returned no results, use hardcoded ticker names
+        if not all_tickers:
+            all_tickers.update(self.ticker_names.keys())
 
         # Filter by query - check both ticker and company name
         matches = []
