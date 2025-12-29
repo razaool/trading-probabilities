@@ -24,6 +24,10 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# Add rate limiting error handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Configure CORS - MUST be before other middleware
 # Allow all origins if CORS_ALLOW_ALL is enabled (for development)
 allow_origins = ["*"] if settings.CORS_ALLOW_ALL else settings.CORS_ORIGINS
@@ -37,9 +41,11 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Add rate limiting error handler
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@app.options("/{path:path}")
+async def options_handler(request: Request, path: str):
+    """Handle OPTIONS requests for CORS preflight"""
+    return {"status": "ok"}
 
 
 @app.middleware("http")

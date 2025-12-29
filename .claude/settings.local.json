@@ -40,7 +40,8 @@
       "Bash(ipconfig:*)",
       "Bash(ip:*)",
       "Bash(git reset:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(ls:*)"
     ]
   }
 }
