@@ -1,0 +1,41 @@
+name: Update Market Data
+
+on:
+  schedule:
+    # Run every Saturday at 9:00 AM UTC
+    - cron: '0 9 * * 6'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run market data update
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          cd backend
+          python scripts/update_market_data.py
+
+      - name: Report completion
+        if: success()
+        run: echo "Market data update completed successfully"
+
+      - name: Report failure
+        if: failure()
+        run: echo "Market data update failed - check logs for details"
