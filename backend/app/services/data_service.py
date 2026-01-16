@@ -15,7 +15,10 @@ class DataService:
 
     def __init__(self):
         self.cache = {}  # In-memory cache (fallback)
-        self.db_engine = create_engine(settings.DATABASE_URL)
+        # Reuse the existing engine from models.py instead of creating a new one
+        # This prevents having two separate connection pools
+        from app.database.models import engine
+        self.db_engine = engine
 
     async def fetch_historical_data(
         self, ticker: str, period: str = "20y"

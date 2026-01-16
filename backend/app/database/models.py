@@ -16,7 +16,17 @@ if settings.DATABASE_URL.startswith("sqlite"):
     )
 else:
     # For PostgreSQL and other databases
-    engine = create_engine(settings.DATABASE_URL)
+    # Optimize pool settings for Railway and other cloud providers
+    engine = create_engine(
+        settings.DATABASE_URL,
+        pool_size=3,          # Reduce from default 5 to save resources
+        max_overflow=5,       # Reduce from default 10 to save resources
+        pool_recycle=3600,    # Recycle connections every hour to prevent stale connections
+        pool_pre_ping=True,   # Test connections before using them
+        connect_args={
+            "connect_timeout": 10,  # Connection timeout
+        }
+    )
 
 # Create session factory
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
