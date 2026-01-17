@@ -16,6 +16,10 @@ yfinance>=0.2.32
 # HTTP client
 httpx>=0.25.2
 aiohttp>=3.9.1
+requests>=2.31.0
+
+# Progress bars
+tqdm>=4.66.0
 
 # Rate limiting
 slowapi>=0.1.9
