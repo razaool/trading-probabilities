@@ -2,8 +2,8 @@ name: Update Market Data
 
 on:
   schedule:
-    # Run every Saturday at 9:00 AM UTC
-    - cron: '0 9 * * 6'
+    # Run every weekday (Monday-Friday) at 10:00 PM UTC
+    - cron: '0 22 * * 1-5'
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
