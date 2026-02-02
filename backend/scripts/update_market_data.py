@@ -355,7 +355,7 @@ def main():
     print()
 
     # Calculate date range
-    end_date = datetime.now().date() - timedelta(days=1)  # Yesterday
+    end_date = datetime.now().date()  # Today
     print(f"📅 End date: {end_date}")
     print()
 
